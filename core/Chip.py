@@ -2,17 +2,14 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Protocol, Mapping
 
-class PinNotFoundError(Exception):
-    pass
-
 class Chip(Protocol):
-    def forward(self, **kwargs) -> Mapping[str, int]:
+    def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
         pass
 
 @dataclass
-class ChipNode:
+class Pin:
+    pin:  str
     chip: Chip
-    neighbors: list[ChipNode]
 
 @dataclass
 class AndChip:
@@ -23,4 +20,11 @@ class AndChip:
 
 @dataclass
 class CircuitChip:
-    nodes: list[ChipNode]
+    ins:   list[str]
+    outs:  list[str]
+    nodes: list[Chip]
+    edges: dict[str, list[Pin]]
+
+    def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
+        pass
+
