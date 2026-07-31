@@ -24,6 +24,7 @@ class CircuitChip:
     outs:  list[str]
     nodes: list[Chip]
     edges: dict[str, list[Pin]]
+    
 
     def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
         pass
