@@ -23,18 +23,18 @@ class Engine:
 
     def consume_comment_to_end_line(self, index: int) -> int:
         if self.hdl.find("//", index, index + 2) != index:
-            return index
+            raise Exception("Expected comment starting with '//'")
         tmp = self.hdl.find("\n", index + 2)
         if tmp == -1:
-            return index
+            raise Exception("Expected comment to end with 'newline'")
         return tmp + 1
 
     def consume_comment_until_close(self, index: int) -> int:
         if self.hdl.find("/*", index, index + 2) != index:
-            return index
+            raise Exception("Expected comment starting with '/*'")
         tmp = self.hdl.find("*/", index + 2)
         if tmp == -1:
-            return index
+            raise Exception("Expected comment to end with '*/'")
         return tmp + 2
 
     def consume_comment(self, index: int) -> int:
@@ -97,9 +97,8 @@ class Engine:
 
         return index
 
-
     def parse_implementation(self, index: int) -> int:
-        pass
+        return index
 
 
 
