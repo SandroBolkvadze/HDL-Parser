@@ -23,7 +23,6 @@ class Engine:
                 self.index += 1
                 self.line += 1
             elif self.hdl[self.index] == "/":
-                # print("here", self.index, self.hdl[self.index: self.index+10])
                 self.consume_comment()
             else:
                 break
@@ -157,6 +156,7 @@ class Engine:
 
     def parse_pins(self):
         while self.peek() != ";":
+            # parse & save pin name
             old = self.index
             self.consume_pin_token()
             self.input_pins.append(self.hdl[old: self.index])
@@ -165,9 +165,11 @@ class Engine:
             if self.peek() == ";":
                 break
 
+            # parse ',' symbol
             self.consume_expected_symbol(",")
             self.advance()
 
+        # parse ';' symbol
         self.consume_expected_symbol(";")
         self.advance()
         return self.index
