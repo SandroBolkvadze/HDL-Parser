@@ -17,7 +17,7 @@ class Engine:
                 index += 1
                 self.line += 1
             elif self.hdl[index] == "/":
-                self.consume_comment(index)
+                index = self.consume_comment(index)
             else:
                 break
         return index
@@ -41,7 +41,7 @@ class Engine:
 
     def consume_comment(self, index: int) -> int:
         if index + 1 >= len(self.hdl) or self.hdl[index] != "/":
-            return index
+            raise Exception()
 
         if self.hdl[index + 1] == "/":
             return self.consume_comment_to_end_line(index)
@@ -52,6 +52,8 @@ class Engine:
         return index
 
     def consume_token(self, index: int) -> int:
+        if index < len(self.hdl) and self.hdl[index].isalpha():
+            index += 1
         while index < len(self.hdl) and self.hdl[index].isalnum():
             index += 1
         return index
@@ -99,8 +101,14 @@ class Engine:
 
         return index
 
-    def parse_implementation(self, index: int) -> int:
+    def parse_program(self, index: int) -> int:
         return index
+
+    def parse_interface(self, index: int) -> int:
+        pass
+
+    def parse_implementation(self, index: int) -> int:
+        pass
 
 
 

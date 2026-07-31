@@ -8,10 +8,11 @@ if __name__ == "__main__":
         // dasd sad asd asd asd asdsa
         
         // dasda sdasd asd as dsadadsad
-        
+        CHIP abcd {}
     """
 
     engine = Engine(hdl)
     engine.build()
+    print(engine.chip_name)
 
 
