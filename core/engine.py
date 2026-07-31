@@ -3,127 +3,176 @@ from __future__ import annotations
 class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
+
         self.line = 1
+        self.index = 0
+
         self.chip_name = None
+        self.input_pins = []
+        self.output_pins = []
 
     def parse(self) -> None:
-        self.parse_declaration(self.advance(0))
+        self.advance()
+        self.parse_declaration()
 
-    def advance(self, index: int) -> int:
-        while index < len(self.hdl):
-            if self.hdl[index] == " ":
-                index += 1
-            elif self.hdl[index] == "\n":
-                index += 1
+    def advance(self) -> int:
+        while self.index < len(self.hdl):
+            if self.hdl[self.index] == " ":
+                self.index += 1
+            elif self.hdl[self.index] == "\n":
+                self.index += 1
                 self.line += 1
-            elif self.hdl[index] == "/":
-                index = self.consume_comment(index)
+            elif self.hdl[self.index] == "/":
+                # print("here", self.index, self.hdl[self.index: self.index+10])
+                self.consume_comment()
             else:
                 break
-        return index
+        return self.index
 
-    def consume_comment_to_end_line(self, index: int) -> int:
-        if self.hdl.find("//", index, index + 2) != index:
+    def peek(self) -> str:
+        return self.hdl[self.index] if self.index < len(self.hdl) else ""
+
+    def consume_comment_to_end_line(self) -> int:
+        if self.hdl.find("//", self.index) != self.index:
             raise Exception(f"Line {self.line}: Expected comment starting with '//'")
-        tmp = self.hdl.find("\n", index + 2)
+        tmp = self.hdl.find("\n", self.index + 2)
         if tmp == -1:
             raise Exception(f"Line {self.line}: Expected comment to end with 'newline'")
         self.line += 1
-        return tmp + 1
+        self.index = tmp + 1
+        return self.index
 
-    def consume_comment_until_close(self, index: int) -> int:
-        if self.hdl.find("/*", index, index + 2) != index:
+    def consume_comment_until_close(self) -> int:
+        if self.hdl.find("/*", self.index) != self.index:
             raise Exception(f"Line {self.line}: Expected comment starting with '/*'")
-        tmp = self.hdl.find("*/", index + 2)
+        tmp = self.hdl.find("*/", self.index + 2)
         if tmp == -1:
             raise Exception(f"Line {self.line}: Expected comment to end with '*/'")
-        return tmp + 2
+        self.index = tmp + 2
+        return self.index
 
-    def consume_comment(self, index: int) -> int:
-        if index + 1 >= len(self.hdl) or self.hdl[index] != "/":
+    def consume_comment(self) -> int:
+        if self.index + 1 >= len(self.hdl) or self.hdl[self.index] != "/":
             raise Exception()
 
-        if self.hdl[index + 1] == "/":
-            return self.consume_comment_to_end_line(index)
+        if self.hdl[self.index + 1] == "/":
+            self.consume_comment_to_end_line()
 
-        if self.hdl[index + 1] == "*":
-            return self.consume_comment_until_close(index)
+        if self.hdl[self.index + 1] == "*":
+            self.consume_comment_until_close()
 
-        return index
+        return self.index
 
-    def consume_token(self, index: int) -> int:
-        if index < len(self.hdl) and self.hdl[index].isalpha():
-            index += 1
-        else:
-            return index
-        while index < len(self.hdl) and self.hdl[index].isalnum():
-            index += 1
-        return index
+    def consume_token(self) -> int:
+        if self.index < len(self.hdl) and self.hdl[self.index].isalpha():
+            self.index += 1
+            while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
+                self.index += 1
+        return self.index
 
-    def consume_symbol(self, index: int) -> int:
-        if index < len(self.hdl) and not self.hdl[index].isalnum():
-            index += 1
-        return index
+    def consume_symbol(self) -> int:
+        if self.index < len(self.hdl) and (not self.hdl[self.index].isalnum() and not self.hdl[self.index] in [" ", "\n"]):
+            self.index += 1
+        return self.index
 
-    def consume_pin_token(self, index: int):
-        tmp = self.consume_token(index)
-        if index == tmp:
+    def consume_pin_token(self):
+        old = self.index
+        self.consume_token()
+        if old == self.index:
             raise Exception(f"Line {self.line}: Expected pin name")
-        return tmp
+        return self.index
 
-    def consume_expected_token(self, index: int, token: str) -> int:
-        tmp = self.consume_token(index)
-        if self.hdl[index: tmp] != token:
+    def consume_expected_token(self, token: str) -> int:
+        old = self.index
+        self.consume_token()
+        if self.hdl[old: self.index] != token:
             raise Exception(f"Line {self.line}: Missing '{token}' keyword")
-        return tmp
+        return self.index
 
-    def consume_expected_symbol(self, index: int, symbol: str) -> int:
-        tmp = self.consume_symbol(index)
-        if self.hdl[index: tmp] != symbol:
+    def consume_expected_symbol(self, symbol: str) -> int:
+        old = self.index
+        self.consume_symbol()
+        if self.hdl[old: self.index] != symbol:
             raise Exception(f"Line {self.line}: Missing '{symbol}'")
-        return tmp
+        return self.index
 
-    def parse_declaration(self, index: int) -> int:
+    def parse_declaration(self) -> int:
         # consume 'CHIP' keyword
-        index = self.consume_expected_token(index, "CHIP")
-        index = self.advance(index)
+        self.consume_expected_token("CHIP")
+        self.advance()
 
         # consume chip name
-        tmp = self.consume_token(index)
-        if index == tmp:
+        old = self.index
+        self.consume_token()
+        if old == self.index:
             raise Exception(f"Line {self.line}: Missing chip name")
-        self.chip_name = self.hdl[index: tmp]
-        index = self.advance(tmp)
+        self.chip_name = self.hdl[old: self.index]
+        self.advance()
 
         # consume '{' symbol
-        index = self.consume_expected_symbol(index, "{")
-        index = self.advance(index)
+        self.consume_expected_symbol("{")
+        self.advance()
 
-        # parse chip implementation
-        index = self.parse_implementation(index)
-        index = self.advance(index)
+        # parse chip program
+        self.parse_program()
+        self.advance()
 
         # consume '}' symbol
-        index = self.consume_expected_symbol(index, "}")
-        index = self.advance(index)
+        self.consume_expected_symbol("}")
+        self.advance()
 
-        return index
+        return self.index
 
-    def parse_program(self, index: int) -> int:
+    def parse_program(self) -> int:
         # parse chip interface
-        index = self.parse_interface(index)
-        index = self.advance(index)
+        self.parse_interface()
+        self.advance()
 
         # parse chip implementation
-        index = self.parse_implementation(index)
-        index = self.advance(index)
-        return index
+        self.parse_implementation()
+        self.advance()
+        return self.index
 
-    def parse_interface(self, index: int) -> int:
+    def parse_interface(self) -> int:
+        # parse input pins
+        self.parse_input_interface()
+        self.advance()
 
-        pass
+        # parse output pins
+        self.parse_output_interface()
+        self.advance()
+        return self.index
 
-    def parse_implementation(self, index: int) -> int:
+    def parse_input_interface(self) -> int:
+        self.consume_expected_token("IN")
+        self.advance()
+        self.parse_pins()
+        return self.index
+
+    def parse_output_interface(self) -> int:
+        self.consume_expected_token("OUT")
+        self.advance()
+        self.parse_pins()
+        return self.index
+
+    def parse_pins(self):
+        while self.peek() != ";":
+            old = self.index
+            self.consume_pin_token()
+            self.input_pins.append(self.hdl[old: self.index])
+            self.advance()
+
+            if self.peek() == ";":
+                break
+
+            self.consume_expected_symbol(",")
+            self.advance()
+
+        self.consume_expected_symbol(";")
+        self.advance()
+        return self.index
+
+    def parse_implementation(self) -> int:
         pass
 
 
