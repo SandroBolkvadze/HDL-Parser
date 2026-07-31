@@ -226,7 +226,7 @@ class Engine:
 
         return self.index
 
-    def parse_chip_part(self):
+    def parse_chip_part(self) -> int:
         chip_name = self.consume_chip_name()
         self.advance()
 
@@ -248,9 +248,17 @@ class Engine:
 
         return self.index
 
-    def parse_connection(self):
+    def parse_connection(self) -> int:
+        self.parse_implementation_pin_token(False)
+        self.advance()
 
-        pass
+        self.consume_expected_symbol("=")
+        self.advance()
+
+        self.parse_implementation_pin_token(True)
+        self.advance()
+
+        return self.index
 
     def parse_implementation_pin_token(self, right: bool):
         chip_name = self.consume_chip_name()
@@ -263,6 +271,4 @@ class Engine:
 
         self.consume_expected_symbol("[")
 
-
-        pass
-
+        return None
