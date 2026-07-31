@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+from poetry.installation.executor import Executor
+
+
 class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
+        self.chip_name = None
 
-    def peek_advance(self) -> int:
-
-        pass
+    def build(self) -> None:
+        self.parse_declaration(self.advance(0))
 
     def advance(self, index: int) -> int:
         while index < len(self.hdl):
@@ -19,7 +22,7 @@ class Engine:
         return index
 
     def consume_comment_to_end_line(self, index: int) -> int:
-        if self.hdl.find("//", index) != index:
+        if self.hdl.find("//", index, index + 2) != index:
             return index
         tmp = self.hdl.find("\n", index + 2)
         if tmp == -1:
@@ -27,7 +30,7 @@ class Engine:
         return tmp + 1
 
     def consume_comment_until_close(self, index: int) -> int:
-        if self.hdl.find("/*", index) != index:
+        if self.hdl.find("/*", index, index + 2) != index:
             return index
         tmp = self.hdl.find("*/", index + 2)
         if tmp == -1:
@@ -46,26 +49,58 @@ class Engine:
 
         return index
 
-    def consume_keyword(self, index: int, keyword: str) -> int:
-        if self.hdl[index: min(index + len(keyword), len(self.hdl))] != keyword:
-            return index
-
-        if self.advance(index + len(keyword)) == index + len(keyword):
-            return index
-
-        return index + len(keyword)
-
     def consume_token(self, index: int) -> int:
-        while index < len(self.hdl) and (self.hdl[index].isalpha() or self.hdl[index].isnumeric()):
+        while index < len(self.hdl) and self.hdl[index].isalnum():
             index += 1
         return index
 
-    def build(self) -> None:
-        self.parse_declaration(self.advance(0))
+    def consume_symbol(self, index: int) -> int:
+        if index < len(self.hdl) and not self.hdl[index].isalnum():
+            index += 1
+        return index
 
-    def parse_declaration(self, index: int) -> None:
-        self.consume_keyword(index, "CHIP")
-        chip_name = self.consume_token()
+    def consume_expected_token(self, index: int, token: str) -> int:
+        tmp = self.consume_token(index)
+        if self.hdl[index: tmp] != token:
+            raise Exception(f"Missing '{token}' keyword")
+        return tmp
+
+    def consume_expected_symbol(self, index: int, symbol: str) -> int:
+        tmp = self.consume_symbol(index)
+        if self.hdl[index: tmp] != symbol:
+            raise Exception(f"Missing '{symbol}'")
+        return tmp
+
+    def parse_declaration(self, index: int) -> int:
+        # consume 'CHIP' keyword
+        index = self.consume_expected_token(index, "CHIP")
+        index = self.advance(index)
+
+        # consume chip name
+        tmp = self.consume_token(index)
+        if index == tmp:
+            raise Exception("Missing chip name")
+        self.chip_name = self.hdl[index: tmp]
+        index = self.advance(tmp)
+
+        # consume '{' symbol
+        index = self.consume_expected_symbol(index, "{")
+        index = self.advance(index)
+
+        # parse chip implementation
+        index = self.parse_implementation(index)
+        index = self.advance(index)
+
+        # consume '}' symbol
+        index = self.consume_expected_symbol(index, "}")
+        index = self.advance(index)
+
+        return index
+
+
+    def parse_implementation(self, index: int) -> int:
+        pass
+
 
 
 
