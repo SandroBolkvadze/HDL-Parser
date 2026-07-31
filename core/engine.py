@@ -1,4 +1,5 @@
 from __future__ import annotations
+from core.pin import Pin
 
 class Engine:
     def __init__(self, hdl: str) -> None:
@@ -7,9 +8,9 @@ class Engine:
         self.line = 1
         self.index = 0
 
-        self.chip_name = None
-        self.input_pins = []
-        self.output_pins = []
+        self.chip_name = ""
+        self.input_pins: list[Pin] = []
+        self.output_pins: list[Pin] = []
 
     def parse(self) -> None:
         self.advance()
@@ -62,6 +63,11 @@ class Engine:
 
         return self.index
 
+    def consume_alphanum(self):
+        while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
+            self.index += 1
+        return self.index
+
     def consume_token(self) -> int:
         if self.index < len(self.hdl) and self.hdl[self.index].isalpha():
             self.index += 1
@@ -74,11 +80,23 @@ class Engine:
             self.index += 1
         return self.index
 
-    def consume_pin_token(self):
+    def consume_decimal(self) -> int:
+        while self.index < len(self.hdl) and self.hdl[self.index].isdecimal():
+            self.index += 1
+        return self.index
+
+    def consume_pin_name(self):
         old = self.index
         self.consume_token()
         if old == self.index:
             raise Exception(f"Line {self.line}: Expected pin name")
+        return self.index
+
+    def consume_chip_name(self):
+        old = self.index
+        self.consume_token()
+        if old == self.index:
+            raise Exception(f"Line {self.line}: Expected GateClass name")
         return self.index
 
     def consume_expected_token(self, token: str) -> int:
@@ -145,21 +163,21 @@ class Engine:
     def parse_input_interface(self) -> int:
         self.consume_expected_token("IN")
         self.advance()
-        self.parse_pins()
+        self.input_pins = self.parse_interface_pins()
         return self.index
 
     def parse_output_interface(self) -> int:
         self.consume_expected_token("OUT")
         self.advance()
-        self.parse_pins()
+        self.output_pins = self.parse_interface_pins()
         return self.index
 
-    def parse_pins(self):
+    def parse_interface_pins(self) -> list[Pin]:
+        pins: list[Pin] = []
         while self.peek() != ";":
             # parse & save pin name
-            old = self.index
-            self.consume_pin_token()
-            self.input_pins.append(self.hdl[old: self.index])
+            pin = self.parse_interface_pin_token()
+            pins.append(pin)
             self.advance()
 
             if self.peek() == ";":
@@ -172,11 +190,50 @@ class Engine:
         # parse ';' symbol
         self.consume_expected_symbol(";")
         self.advance()
-        return self.index
+        return pins
+
+    def parse_interface_pin_token(self) -> Pin:
+        # parse pin name
+        old = self.index
+        self.consume_pin_name()
+        name = self.hdl[old: self.index]
+
+        # check if pin is multi-bit
+        if self.peek() != "[":
+            return Pin(name, 1)
+
+        # consume '[' symbol
+        self.consume_expected_symbol("[")
+
+        # consume pin width
+        old = self.index
+        self.consume_alphanum()
+        width = self.hdl[old: self.index]
+
+        # consume ']' symbol
+        self.consume_expected_symbol("]")
+
+        # check if pin width is numeric
+        if not width.isnumeric():
+            raise Exception(f"Line {self.line}: {name}[{width}] has invalid bus width")
+
+        return Pin(name, int(width))
 
     def parse_implementation(self) -> int:
-        pass
+        self.consume_expected_token("PARTS:")
+        self.advance()
 
+        return self.index
+
+    def parse_chip_part(self):
+        self.consume_chip_name_token()
+        self.advance()
+
+        self.consume_expected_symbol("(")
+        self.advance()
+
+
+        pass
 
 
 
