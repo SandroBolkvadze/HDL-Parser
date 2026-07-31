@@ -204,7 +204,7 @@ class Engine:
 
         # consume pin width
         old = self.index
-        while self.index < len(self.hdl) and self.hdl[self.index] != "]":
+        while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
             self.index += 1
 
         width = self.hdl[old: self.index]
@@ -229,15 +229,37 @@ class Engine:
         return self.index
 
     def parse_chip_part(self):
+        old = self.index
         self.consume_chip_name()
+        chip_name = self.hdl[old: self.index]
         self.advance()
 
         self.consume_expected_symbol("(")
         self.advance()
 
+        while self.peek() != ")":
+            self.parse_connection()
+            self.advance()
+
+            if self.peek() == ")":
+                break
+
+            self.consume_expected_symbol(",")
+            self.advance()
+
+        self.consume_expected_symbol(")")
+        self.advance()
 
         return self.index
 
+    def parse_connection(self):
 
+        pass
 
+    def parse_implementation_pin_token(self):
+        self.consume_chip_name()
+
+        
+
+        pass
 
