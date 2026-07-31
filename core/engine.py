@@ -6,7 +6,7 @@ class Engine:
         self.line = 1
         self.chip_name = None
 
-    def build(self) -> None:
+    def parse(self) -> None:
         self.parse_declaration(self.advance(0))
 
     def advance(self, index: int) -> int:
@@ -54,6 +54,8 @@ class Engine:
     def consume_token(self, index: int) -> int:
         if index < len(self.hdl) and self.hdl[index].isalpha():
             index += 1
+        else:
+            return index
         while index < len(self.hdl) and self.hdl[index].isalnum():
             index += 1
         return index
@@ -62,6 +64,12 @@ class Engine:
         if index < len(self.hdl) and not self.hdl[index].isalnum():
             index += 1
         return index
+
+    def consume_pin_token(self, index: int):
+        tmp = self.consume_token(index)
+        if index == tmp:
+            raise Exception(f"Line {self.line}: Expected pin name")
+        return tmp
 
     def consume_expected_token(self, index: int, token: str) -> int:
         tmp = self.consume_token(index)
@@ -102,9 +110,17 @@ class Engine:
         return index
 
     def parse_program(self, index: int) -> int:
+        # parse chip interface
+        index = self.parse_interface(index)
+        index = self.advance(index)
+
+        # parse chip implementation
+        index = self.parse_implementation(index)
+        index = self.advance(index)
         return index
 
     def parse_interface(self, index: int) -> int:
+
         pass
 
     def parse_implementation(self, index: int) -> int:

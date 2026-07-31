@@ -12,7 +12,7 @@ if __name__ == "__main__":
     """
 
     engine = Engine(hdl)
-    engine.build()
+    engine.parse()
     print(engine.chip_name)
 
 
