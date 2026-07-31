@@ -9,8 +9,8 @@ if __name__ == "__main__":
         
         // dasda sdasd asd as dsadadsad
         CHIP abcd {
-            IN a;
-            OUT;
+            IN a[15], b[2], c;
+            OUT c[-1, a[10;
         }
     """
 
@@ -18,4 +18,6 @@ if __name__ == "__main__":
     engine.parse()
     print(engine.chip_name)
 
+    print(engine.input_pins)
+    print(engine.output_pins)
 

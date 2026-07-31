@@ -5,7 +5,6 @@ class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
 
-        self.line = 1
         self.index = 0
 
         self.chip_name = ""
@@ -22,7 +21,6 @@ class Engine:
                 self.index += 1
             elif self.hdl[self.index] == "\n":
                 self.index += 1
-                self.line += 1
             elif self.hdl[self.index] == "/":
                 self.consume_comment()
             else:
@@ -34,20 +32,19 @@ class Engine:
 
     def consume_comment_to_end_line(self) -> int:
         if self.hdl.find("//", self.index) != self.index:
-            raise Exception(f"Line {self.line}: Expected comment starting with '//'")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected comment starting with '//'")
         tmp = self.hdl.find("\n", self.index + 2)
         if tmp == -1:
-            raise Exception(f"Line {self.line}: Expected comment to end with 'newline'")
-        self.line += 1
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected comment to end with 'newline'")
         self.index = tmp + 1
         return self.index
 
     def consume_comment_until_close(self) -> int:
         if self.hdl.find("/*", self.index) != self.index:
-            raise Exception(f"Line {self.line}: Expected comment starting with '/*'")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected comment starting with '/*'")
         tmp = self.hdl.find("*/", self.index + 2)
         if tmp == -1:
-            raise Exception(f"Line {self.line}: Expected comment to end with '*/'")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected comment to end with '*/'")
         self.index = tmp + 2
         return self.index
 
@@ -89,28 +86,28 @@ class Engine:
         old = self.index
         self.consume_token()
         if old == self.index:
-            raise Exception(f"Line {self.line}: Expected pin name")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected pin name")
         return self.index
 
     def consume_chip_name(self):
         old = self.index
         self.consume_token()
         if old == self.index:
-            raise Exception(f"Line {self.line}: Expected GateClass name")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected GateClass name")
         return self.index
 
     def consume_expected_token(self, token: str) -> int:
         old = self.index
         self.consume_token()
         if self.hdl[old: self.index] != token:
-            raise Exception(f"Line {self.line}: Missing '{token}' keyword")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{token}' keyword")
         return self.index
 
     def consume_expected_symbol(self, symbol: str) -> int:
         old = self.index
         self.consume_symbol()
         if self.hdl[old: self.index] != symbol:
-            raise Exception(f"Line {self.line}: Missing '{symbol}'")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{symbol}'")
         return self.index
 
     def parse_declaration(self) -> int:
@@ -122,7 +119,7 @@ class Engine:
         old = self.index
         self.consume_token()
         if old == self.index:
-            raise Exception(f"Line {self.line}: Missing chip name")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing chip name")
         self.chip_name = self.hdl[old: self.index]
         self.advance()
 
@@ -207,15 +204,17 @@ class Engine:
 
         # consume pin width
         old = self.index
-        self.consume_alphanum()
+        while self.index < len(self.hdl) and self.hdl[self.index] != "]":
+            self.index += 1
+
         width = self.hdl[old: self.index]
 
         # consume ']' symbol
         self.consume_expected_symbol("]")
 
         # check if pin width is numeric
-        if not width.isnumeric():
-            raise Exception(f"Line {self.line}: {name}[{width}] has invalid bus width")
+        if not width.isnumeric() or not int(width) > 0:
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {name}[{width}] has invalid bus width")
 
         return Pin(name, int(width))
 
@@ -223,17 +222,21 @@ class Engine:
         self.consume_expected_token("PARTS:")
         self.advance()
 
+        while self.peek() != "}":
+            self.parse_chip_part()
+            self.advance()
+
         return self.index
 
     def parse_chip_part(self):
-        self.consume_chip_name_token()
+        self.consume_chip_name()
         self.advance()
 
         self.consume_expected_symbol("(")
         self.advance()
 
 
-        pass
+        return self.index
 
 
 
