@@ -143,8 +143,8 @@ class Engine:
         self.advance()
 
         # parse chip implementation
-        # self.parse_implementation()
-        # self.advance()
+        self.parse_implementation()
+        self.advance()
         return self.index
 
     def parse_interface(self) -> int:
@@ -252,8 +252,17 @@ class Engine:
 
         pass
 
-    def parse_implementation_pin_token(self):
-        self.consume_chip_name()
+    def parse_implementation_pin_token(self, right: bool):
+        chip_name = self.consume_chip_name()
+
+        if right and chip_name in ["true", "false"]:
+            return self.index
+
+        if self.peek() != "[":
+            return self.index
+
+        self.consume_expected_symbol("[")
+
 
         pass
 
