@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from poetry.installation.executor import Executor
-
-
 class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
+        self.line = 1
         self.chip_name = None
 
     def build(self) -> None:
@@ -13,8 +11,11 @@ class Engine:
 
     def advance(self, index: int) -> int:
         while index < len(self.hdl):
-            if self.hdl[index] in [" ", "\n"]:
+            if self.hdl[index] == " ":
                 index += 1
+            elif self.hdl[index] == "\n":
+                index += 1
+                self.line += 1
             elif self.hdl[index] == "/":
                 self.consume_comment(index)
             else:
@@ -23,18 +24,19 @@ class Engine:
 
     def consume_comment_to_end_line(self, index: int) -> int:
         if self.hdl.find("//", index, index + 2) != index:
-            raise Exception("Expected comment starting with '//'")
+            raise Exception(f"Line {self.line}: Expected comment starting with '//'")
         tmp = self.hdl.find("\n", index + 2)
         if tmp == -1:
-            raise Exception("Expected comment to end with 'newline'")
+            raise Exception(f"Line {self.line}: Expected comment to end with 'newline'")
+        self.line += 1
         return tmp + 1
 
     def consume_comment_until_close(self, index: int) -> int:
         if self.hdl.find("/*", index, index + 2) != index:
-            raise Exception("Expected comment starting with '/*'")
+            raise Exception(f"Line {self.line}: Expected comment starting with '/*'")
         tmp = self.hdl.find("*/", index + 2)
         if tmp == -1:
-            raise Exception("Expected comment to end with '*/'")
+            raise Exception(f"Line {self.line}: Expected comment to end with '*/'")
         return tmp + 2
 
     def consume_comment(self, index: int) -> int:
@@ -62,13 +64,13 @@ class Engine:
     def consume_expected_token(self, index: int, token: str) -> int:
         tmp = self.consume_token(index)
         if self.hdl[index: tmp] != token:
-            raise Exception(f"Missing '{token}' keyword")
+            raise Exception(f"Line {self.line}: Missing '{token}' keyword")
         return tmp
 
     def consume_expected_symbol(self, index: int, symbol: str) -> int:
         tmp = self.consume_symbol(index)
         if self.hdl[index: tmp] != symbol:
-            raise Exception(f"Missing '{symbol}'")
+            raise Exception(f"Line {self.line}: Missing '{symbol}'")
         return tmp
 
     def parse_declaration(self, index: int) -> int:
@@ -79,7 +81,7 @@ class Engine:
         # consume chip name
         tmp = self.consume_token(index)
         if index == tmp:
-            raise Exception("Missing chip name")
+            raise Exception(f"Line {self.line}: Missing chip name")
         self.chip_name = self.hdl[index: tmp]
         index = self.advance(tmp)
 

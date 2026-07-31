@@ -6,16 +6,12 @@ if __name__ == "__main__":
             dsadasdasd
         */
         // dasd sad asd asd asd asdsa
-        abcd
+        
         // dasda sdasd asd as dsadadsad
-        zzz
+        
     """
 
     engine = Engine(hdl)
-    engine.advance()
-    print(hdl[engine.index])
-    engine.index += 4
-    engine.advance()
-    print(hdl[engine.index])
+    engine.build()
 
 
