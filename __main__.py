@@ -10,7 +10,7 @@ if __name__ == "__main__":
         // dasda sdasd asd as dsadadsad
         CHIP abcd {
             IN a[15], b[2], c;
-            OUT c[-1, a[10;
+            OUT c[1], a[10];
         }
     """
 

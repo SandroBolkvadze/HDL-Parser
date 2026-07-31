@@ -65,36 +65,38 @@ class Engine:
             self.index += 1
         return self.index
 
-    def consume_token(self) -> int:
+    def consume_token(self) -> str:
+        old = self.index
         if self.index < len(self.hdl) and self.hdl[self.index].isalpha():
             self.index += 1
             while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
                 self.index += 1
-        return self.index
+        return self.hdl[old: self.index]
 
-    def consume_symbol(self) -> int:
+    def consume_symbol(self) -> str:
+        old = self.index
         if self.index < len(self.hdl) and (not self.hdl[self.index].isalnum() and not self.hdl[self.index] in [" ", "\n"]):
             self.index += 1
-        return self.index
+        return self.hdl[old: self.index]
 
     def consume_decimal(self) -> int:
         while self.index < len(self.hdl) and self.hdl[self.index].isdecimal():
             self.index += 1
         return self.index
 
-    def consume_pin_name(self):
+    def consume_pin_name(self) -> str:
         old = self.index
-        self.consume_token()
+        token = self.consume_token()
         if old == self.index:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected pin name")
-        return self.index
+        return token
 
-    def consume_chip_name(self):
+    def consume_chip_name(self) -> str:
         old = self.index
-        self.consume_token()
+        token = self.consume_token()
         if old == self.index:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected GateClass name")
-        return self.index
+        return token
 
     def consume_expected_token(self, token: str) -> int:
         old = self.index
@@ -116,11 +118,9 @@ class Engine:
         self.advance()
 
         # consume chip name
-        old = self.index
-        self.consume_token()
-        if old == self.index:
+        chip_name = self.consume_token()
+        if len(chip_name) == 0:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing chip name")
-        self.chip_name = self.hdl[old: self.index]
         self.advance()
 
         # consume '{' symbol
@@ -143,8 +143,8 @@ class Engine:
         self.advance()
 
         # parse chip implementation
-        self.parse_implementation()
-        self.advance()
+        # self.parse_implementation()
+        # self.advance()
         return self.index
 
     def parse_interface(self) -> int:
@@ -191,13 +191,11 @@ class Engine:
 
     def parse_interface_pin_token(self) -> Pin:
         # parse pin name
-        old = self.index
-        self.consume_pin_name()
-        name = self.hdl[old: self.index]
+        pin_name = self.consume_pin_name()
 
         # check if pin is multi-bit
         if self.peek() != "[":
-            return Pin(name, 1)
+            return Pin(pin_name, 1)
 
         # consume '[' symbol
         self.consume_expected_symbol("[")
@@ -214,9 +212,9 @@ class Engine:
 
         # check if pin width is numeric
         if not width.isnumeric() or not int(width) > 0:
-            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {name}[{width}] has invalid bus width")
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{width}] has invalid bus width")
 
-        return Pin(name, int(width))
+        return Pin(pin_name, int(width))
 
     def parse_implementation(self) -> int:
         self.consume_expected_token("PARTS:")
@@ -229,9 +227,7 @@ class Engine:
         return self.index
 
     def parse_chip_part(self):
-        old = self.index
-        self.consume_chip_name()
-        chip_name = self.hdl[old: self.index]
+        chip_name = self.consume_chip_name()
         self.advance()
 
         self.consume_expected_symbol("(")
@@ -258,8 +254,6 @@ class Engine:
 
     def parse_implementation_pin_token(self):
         self.consume_chip_name()
-
-        
 
         pass
 
