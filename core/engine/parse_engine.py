@@ -11,6 +11,7 @@ class ParseEngine:
         self.chip_name = ""
         self.input_pins:  list[Pin]      = []
         self.output_pins: list[Pin]      = []
+        self.chip_parts:   list[str]      = []
         self.chip_connections: list[ChipConnection] = []
 
     def parse(self) -> None:
@@ -30,6 +31,7 @@ class ParseEngine:
         return self.index
 
     def peek(self) -> str:
+        self.advance()
         return self.hdl[self.index] if self.index < len(self.hdl) else ""
 
     def consume_comment_to_end_line(self) -> int:
@@ -63,106 +65,91 @@ class ParseEngine:
         return self.index
 
     def consume_token(self) -> str:
+        self.advance()
         old = self.index
         if self.index < len(self.hdl) and self.hdl[self.index].isalpha():
             self.index += 1
             while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
                 self.index += 1
-        return self.hdl[old: self.index]
+        token = self.hdl[old: self.index]
+        return token
 
     def consume_symbol(self) -> str:
+        self.advance()
         old = self.index
         if self.index < len(self.hdl) and (not self.hdl[self.index].isalnum() and not self.hdl[self.index] in [" ", "\n"]):
             self.index += 1
-        return self.hdl[old: self.index]
-
-    def consume_decimal(self) -> int:
-        while self.index < len(self.hdl) and self.hdl[self.index].isdecimal():
-            self.index += 1
-        return self.index
+        symbol = self.hdl[old: self.index]
+        return symbol
 
     def consume_pin_name(self) -> str:
-        old = self.index
         token = self.consume_token()
-        if old == self.index:
+        if len(token) == 0:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected pin name")
         return token
 
     def consume_chip_name(self) -> str:
-        old = self.index
         token = self.consume_token()
-        if old == self.index:
+        if len(token) == 0:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected GateClass name")
         return token
 
-    def consume_expected_token(self, token: str) -> int:
-        old = self.index
-        self.consume_token()
-        if self.hdl[old: self.index] != token:
-            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{token}' keyword")
+    def consume_expected_token(self, expected_token: str) -> int:
+        token = self.consume_token()
+        if token != expected_token:
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{expected_token}' keyword")
         return self.index
 
-    def consume_expected_symbol(self, symbol: str) -> int:
-        old = self.index
-        self.consume_symbol()
-        if self.hdl[old: self.index] != symbol:
-            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{symbol}'")
+    def consume_expected_symbol(self, expected_symbol: str) -> int:
+        self.advance()
+        symbol = self.consume_symbol()
+        if symbol != expected_symbol:
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing '{expected_symbol}'")
         return self.index
 
     def parse_declaration(self) -> int:
         # consume 'CHIP' keyword
         self.consume_expected_token("CHIP")
-        self.advance()
 
         # consume chip name
         chip_name = self.consume_token()
         if len(chip_name) == 0:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Missing chip name")
-        self.advance()
 
         # consume '{' symbol
         self.consume_expected_symbol("{")
-        self.advance()
 
         # parse chip program
         self.parse_program()
-        self.advance()
 
         # consume '}' symbol
         self.consume_expected_symbol("}")
-        self.advance()
 
         return self.index
 
     def parse_program(self) -> int:
         # parse chip interface
         self.parse_interface()
-        self.advance()
 
         # parse chip implementation
         self.parse_implementation()
-        self.advance()
         return self.index
 
     def parse_interface(self) -> int:
         # parse input pins
         self.parse_input_interface()
-        self.advance()
 
         # parse output pins
         self.parse_output_interface()
-        self.advance()
         return self.index
 
     def parse_input_interface(self) -> int:
         self.consume_expected_token("IN")
-        self.advance()
         self.input_pins = self.parse_interface_pins()
         return self.index
 
     def parse_output_interface(self) -> int:
         self.consume_expected_token("OUT")
-        self.advance()
         self.output_pins = self.parse_interface_pins()
         return self.index
 
@@ -172,18 +159,15 @@ class ParseEngine:
             # parse & save pin name
             pin = self.parse_interface_pin_token()
             pins.append(pin)
-            self.advance()
 
             if self.peek() == ";":
                 break
 
             # parse ',' symbol
             self.consume_expected_symbol(",")
-            self.advance()
 
         # parse ';' symbol
         self.consume_expected_symbol(";")
-        self.advance()
         return pins
 
     def parse_interface_pin_token(self) -> Pin:
@@ -219,52 +203,41 @@ class ParseEngine:
 
     def parse_implementation(self) -> int:
         self.consume_expected_token("PARTS")
-        self.advance()
 
         self.consume_expected_symbol(":")
-        self.advance()
 
         while self.peek() != "}":
             self.parse_chip_part()
-            self.advance()
 
         return self.index
 
     def parse_chip_part(self) -> int:
         chip_name = self.consume_chip_name()
-        self.advance()
+        self.chip_parts.append(chip_name)
 
         self.consume_expected_symbol("(")
-        self.advance()
 
         while self.peek() != ")":
             connection = self.parse_connection()
             self.chip_connections.append(ChipConnection(chip_name, connection))
-            self.advance()
 
             if self.peek() == ")":
                 break
 
             self.consume_expected_symbol(",")
-            self.advance()
 
         self.consume_expected_symbol(")")
-        self.advance()
 
         self.consume_expected_symbol(";")
-        self.advance()
 
         return self.index
 
     def parse_connection(self) -> Connection:
         left = self.parse_implementation_pin_token(False)
-        self.advance()
 
         self.consume_expected_symbol("=")
-        self.advance()
 
         right = self.parse_implementation_pin_token(True)
-        self.advance()
 
         return Connection(left, right)
 
