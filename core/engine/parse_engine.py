@@ -10,9 +10,9 @@ class ParseEngine:
         self.hdl = hdl
         self.index = 0
         self.chip_name = ""
-        self.input_pins: list[Pin] = []
-        self.output_pins: list[Pin] = []
-        self.chip_parts: list[ChipPart] = []
+        self.input_pins:  list[Pin]      = []
+        self.output_pins: list[Pin]      = []
+        self.chip_parts:  list[ChipPart] = []
 
     def parse(self) -> None:
         self.advance()
