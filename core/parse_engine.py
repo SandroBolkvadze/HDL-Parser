@@ -5,7 +5,7 @@ from core.connection import SubBus, Connection
 from core.pin import Pin
 from core.utils import is_integer
 
-class Engine:
+class ParseEngine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
         self.index = 0

@@ -1,4 +1,4 @@
-from core.engine import Engine
+from core.parse_engine import ParseEngine
 
 if __name__ == "__main__":
     hdl = """
@@ -25,7 +25,7 @@ CHIP Mux4Way16 {
 }
     """
 
-    engine = Engine(hdl)
+    engine = ParseEngine(hdl)
     engine.parse()
     print(engine.chip_name)
 
