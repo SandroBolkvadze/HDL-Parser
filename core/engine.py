@@ -5,7 +5,6 @@ from core.connection import SubBus, Connection
 from core.pin import Pin
 from core.utils import is_integer
 
-
 class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
@@ -205,6 +204,9 @@ class Engine:
             self.index += 1
         width = self.hdl[old: self.index]
 
+        if self.peek() != "]":
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Pin '{pin_name}' missing ']'")
+
         # consume ']' symbol
         self.consume_expected_symbol("]")
 
@@ -287,6 +289,9 @@ class Engine:
         while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
             self.index += 1
         sub_bus = self.hdl[old: self.index]
+
+        if self.peek() != "]":
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Pin '{pin_name}' missing ']'")
 
         # consume ']' symbol
         self.consume_expected_symbol("]")
