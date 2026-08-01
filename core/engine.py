@@ -64,11 +64,6 @@ class Engine:
 
         return self.index
 
-    def consume_alphanum(self):
-        while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
-            self.index += 1
-        return self.index
-
     def consume_token(self) -> str:
         old = self.index
         if self.index < len(self.hdl) and self.hdl[self.index].isalpha():
