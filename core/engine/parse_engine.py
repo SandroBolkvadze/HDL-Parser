@@ -52,7 +52,7 @@ class ParseEngine:
         return self.index
 
     def consume_comment(self) -> int:
-        if self.hdl[self.index] != "/" or self.index > self.hdl:
+        if self.hdl[self.index] != "/" or self.index + 1 > len(self.hdl):
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: Expected comment")
 
         if self.hdl[self.index + 1] == "/":
