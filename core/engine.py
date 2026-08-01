@@ -1,15 +1,17 @@
 from __future__ import annotations
+
+from core.chip_part import ChipPart
+from core.connection import SubBus, Connection
 from core.pin import Pin
 
 class Engine:
     def __init__(self, hdl: str) -> None:
         self.hdl = hdl
-
         self.index = 0
-
         self.chip_name = ""
         self.input_pins: list[Pin] = []
         self.output_pins: list[Pin] = []
+        self.chip_parts: list[ChipPart] = []
 
     def parse(self) -> None:
         self.advance()
@@ -204,15 +206,16 @@ class Engine:
         old = self.index
         while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
             self.index += 1
-
         width = self.hdl[old: self.index]
 
         # consume ']' symbol
         self.consume_expected_symbol("]")
 
         # check if pin width is numeric
-        if not width.isnumeric() or not int(width) > 0:
+        if not width.isnumeric():
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{width}] has invalid bus width")
+        if int(width) <= 0:
+            raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{width}] negative bus widths are not allowed")
 
         return Pin(pin_name, int(width))
 
@@ -221,20 +224,22 @@ class Engine:
         self.advance()
 
         while self.peek() != "}":
-            self.parse_chip_part()
+            self.chip_parts.append(self.parse_chip_part())
             self.advance()
 
         return self.index
 
-    def parse_chip_part(self) -> int:
+    def parse_chip_part(self) -> ChipPart:
         chip_name = self.consume_chip_name()
         self.advance()
 
         self.consume_expected_symbol("(")
         self.advance()
 
+        connections: list[Connection] = []
+
         while self.peek() != ")":
-            self.parse_connection()
+            connections.append(self.parse_connection())
             self.advance()
 
             if self.peek() == ")":
@@ -246,29 +251,52 @@ class Engine:
         self.consume_expected_symbol(")")
         self.advance()
 
-        return self.index
+        return ChipPart(chip_name, connections)
 
-    def parse_connection(self) -> int:
-        self.parse_implementation_pin_token(False)
+    def parse_connection(self) -> Connection:
+        left = self.parse_implementation_pin_token(False)
         self.advance()
 
         self.consume_expected_symbol("=")
         self.advance()
 
-        self.parse_implementation_pin_token(True)
+        right = self.parse_implementation_pin_token(True)
         self.advance()
 
-        return self.index
+        return Connection(left, right)
 
-    def parse_implementation_pin_token(self, right: bool):
-        chip_name = self.consume_chip_name()
+    def parse_implementation_pin_token(self, is_right: bool) -> SubBus:
+        pin_name = self.consume_pin_name()
 
-        if right and chip_name in ["true", "false"]:
-            return self.index
+        if is_right and pin_name in ["true", "false"]:
+            return SubBus(pin_name, (0, -1))
 
         if self.peek() != "[":
-            return self.index
+            return SubBus(pin_name, (0, -1))
 
         self.consume_expected_symbol("[")
 
-        return None
+        # consume bus pins
+        old = self.index
+        while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
+            self.index += 1
+        sub_bus = self.hdl[old: self.index]
+
+        self.consume_expected_symbol("]")
+
+        sub_bus = sub_bus.split("..")
+
+        if len(sub_bus) == 1 and sub_bus[0].isdecimal():
+            width = int(sub_bus[0])
+            if width < 0:
+                raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
+            return SubBus(pin_name, (width, width))
+
+        if len(sub_bus) == 2 and sub_bus[0].isdecimal() and sub_bus[1].isdecimal():
+            if int(sub_bus[0]) < 0 or int(sub_bus[1]) < 0:
+                raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
+            if int(sub_bus[0]) > int(sub_bus[1]):
+                raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] left bit number should be lower than right bit number")
+            return SubBus(pin_name, (int(sub_bus[0]), int(sub_bus[1])))
+
+        raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] has an invalid sub bus specification")
