@@ -3,6 +3,8 @@ from __future__ import annotations
 from core.chip_part import ChipPart
 from core.connection import SubBus, Connection
 from core.pin import Pin
+from core.utils import is_integer
+
 
 class Engine:
     def __init__(self, hdl: str) -> None:
@@ -212,7 +214,7 @@ class Engine:
         self.consume_expected_symbol("]")
 
         # check if pin width is numeric
-        if not width.isnumeric():
+        if not is_integer(width):
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{width}] has invalid bus width")
         if int(width) <= 0:
             raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{width}] negative bus widths are not allowed")
@@ -220,7 +222,10 @@ class Engine:
         return Pin(pin_name, int(width))
 
     def parse_implementation(self) -> int:
-        self.consume_expected_token("PARTS:")
+        self.consume_expected_token("PARTS")
+        self.advance()
+
+        self.consume_expected_symbol(":")
         self.advance()
 
         while self.peek() != "}":
@@ -249,6 +254,9 @@ class Engine:
             self.advance()
 
         self.consume_expected_symbol(")")
+        self.advance()
+
+        self.consume_expected_symbol(";")
         self.advance()
 
         return ChipPart(chip_name, connections)
@@ -284,19 +292,20 @@ class Engine:
 
         self.consume_expected_symbol("]")
 
-        sub_bus = sub_bus.split("..")
+        sub_bus_parts = sub_bus.split("..")
 
-        if len(sub_bus) == 1 and sub_bus[0].isdecimal():
-            width = int(sub_bus[0])
+        if len(sub_bus_parts) == 1 and is_integer(sub_bus_parts[0]):
+            width = int(sub_bus_parts[0])
             if width < 0:
                 raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
             return SubBus(pin_name, (width, width))
 
-        if len(sub_bus) == 2 and sub_bus[0].isdecimal() and sub_bus[1].isdecimal():
-            if int(sub_bus[0]) < 0 or int(sub_bus[1]) < 0:
+        print(sub_bus_parts)
+        if len(sub_bus_parts) == 2 and is_integer(sub_bus_parts[0]) and is_integer(sub_bus_parts[1]):
+            if int(sub_bus_parts[0]) < 0 or int(sub_bus_parts[1]) < 0:
                 raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
-            if int(sub_bus[0]) > int(sub_bus[1]):
+            if int(sub_bus_parts[0]) > int(sub_bus_parts[1]):
                 raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] left bit number should be lower than right bit number")
-            return SubBus(pin_name, (int(sub_bus[0]), int(sub_bus[1])))
+            return SubBus(pin_name, (int(sub_bus_parts[0]), int(sub_bus_parts[1])))
 
         raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] has an invalid sub bus specification")

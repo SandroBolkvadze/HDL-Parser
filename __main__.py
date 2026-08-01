@@ -11,6 +11,10 @@ if __name__ == "__main__":
         CHIP abcd {
             IN a[15], b[2], c;
             OUT c[1], a[10];
+            
+            PARTS:
+            dog(a[-2..2]=a);
+            dog2();
         }
     """
 
@@ -20,4 +24,5 @@ if __name__ == "__main__":
 
     print(engine.input_pins)
     print(engine.output_pins)
+    print(engine.chip_parts)
 
