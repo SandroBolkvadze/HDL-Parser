@@ -26,9 +26,9 @@ CHIP Mux4Way16 {
 
     engine = ParseEngine(hdl)
     engine.parse()
-    print(engine.chip_name)
 
+    print(engine.chip_name)
     print(engine.input_pins)
     print(engine.output_pins)
-    print(engine.chip_parts)
+    print(engine.chip_connections)
 

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from core.chip_part import ChipPart
-from core.connection import SubBus, Connection
+from core.connection import SubBus, Connection, ChipConnection
 from core.pin import Pin
 from core.utils import is_integer
 
@@ -12,7 +11,7 @@ class ParseEngine:
         self.chip_name = ""
         self.input_pins:  list[Pin]      = []
         self.output_pins: list[Pin]      = []
-        self.chip_parts:  list[ChipPart] = []
+        self.chip_connections: list[ChipConnection] = []
 
     def parse(self) -> None:
         self.advance()
@@ -226,22 +225,21 @@ class ParseEngine:
         self.advance()
 
         while self.peek() != "}":
-            self.chip_parts.append(self.parse_chip_part())
+            self.parse_chip_part()
             self.advance()
 
         return self.index
 
-    def parse_chip_part(self) -> ChipPart:
+    def parse_chip_part(self) -> int:
         chip_name = self.consume_chip_name()
         self.advance()
 
         self.consume_expected_symbol("(")
         self.advance()
 
-        connections: list[Connection] = []
-
         while self.peek() != ")":
-            connections.append(self.parse_connection())
+            connection = self.parse_connection()
+            self.chip_connections.append(ChipConnection(chip_name, connection))
             self.advance()
 
             if self.peek() == ")":
@@ -256,7 +254,7 @@ class ParseEngine:
         self.consume_expected_symbol(";")
         self.advance()
 
-        return ChipPart(chip_name, connections)
+        return self.index
 
     def parse_connection(self) -> Connection:
         left = self.parse_implementation_pin_token(False)
