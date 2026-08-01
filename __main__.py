@@ -1,4 +1,4 @@
-from core.parse_engine import ParseEngine
+from core.engine.parse_engine import ParseEngine
 
 if __name__ == "__main__":
     hdl = """
