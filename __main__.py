@@ -13,7 +13,7 @@ if __name__ == "__main__":
             OUT c[1], a[10];
             
             PARTS:
-            dog(a[-2..2]=a);
+            dog(a[3..2]=a);
             dog2();
         }
     """

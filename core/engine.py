@@ -274,14 +274,17 @@ class Engine:
         return Connection(left, right)
 
     def parse_implementation_pin_token(self, is_right: bool) -> SubBus:
+        # consume pin name
         pin_name = self.consume_pin_name()
 
+        # check if pin is right
         if is_right and pin_name in ["true", "false"]:
             return SubBus(pin_name, (0, -1))
 
         if self.peek() != "[":
             return SubBus(pin_name, (0, -1))
 
+        # consume '[' symbol
         self.consume_expected_symbol("[")
 
         # consume bus pins
@@ -290,8 +293,10 @@ class Engine:
             self.index += 1
         sub_bus = self.hdl[old: self.index]
 
+        # consume ']' symbol
         self.consume_expected_symbol("]")
 
+        # check sub bus specification
         sub_bus_parts = sub_bus.split("..")
 
         if len(sub_bus_parts) == 1 and is_integer(sub_bus_parts[0]):
@@ -300,12 +305,11 @@ class Engine:
                 raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
             return SubBus(pin_name, (width, width))
 
-        print(sub_bus_parts)
         if len(sub_bus_parts) == 2 and is_integer(sub_bus_parts[0]) and is_integer(sub_bus_parts[1]):
             if int(sub_bus_parts[0]) < 0 or int(sub_bus_parts[1]) < 0:
                 raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal")
             if int(sub_bus_parts[0]) > int(sub_bus_parts[1]):
-                raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] left bit number should be lower than right bit number")
+                raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] left bit number should be lower or equal to the right bit number")
             return SubBus(pin_name, (int(sub_bus_parts[0]), int(sub_bus_parts[1])))
 
         raise Exception(f"Line {self.hdl.count("\n", 0, self.index)}: {pin_name}[{sub_bus}] has an invalid sub bus specification")
