@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
+
 @dataclass(frozen=True)
 class File:
     path: Path

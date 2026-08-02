@@ -20,4 +20,3 @@ if __name__ == "__main__":
     print(engine.input_pins)
     print(engine.output_pins)
     print(engine.chip_connections)
-
