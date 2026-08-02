@@ -7,9 +7,10 @@ from typing import Iterable
 class File:
     path: Path
 
-    def load(self) -> Iterable[str]:
+    def load(self) -> str:
         with self.path.open("r", newline="\n") as file:
-            yield from (line for line in file)
+            content = "".join(line for line in file)
+            return content
 
     def save(self, lines: Iterable[str]) -> None:
         with self.path.open("w") as file:

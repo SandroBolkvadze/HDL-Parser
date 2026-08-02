@@ -1,11 +1,13 @@
+from pathlib import Path
+
 from core.chip import Chip
 from core.engine.parse_engine import ParseEngine
 
 
 class BuildEngine:
     def __init__(self, parser: ParseEngine):
-        pass
+        self.parser = parser
 
-    def build(self, hdl: str) -> Chip:
-
+    def build(self, hdl: Path) -> Chip:
+        
         pass

@@ -10,7 +10,6 @@ class Chip(Protocol):
     def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
         pass
 
-
 @dataclass
 class CircuitChip:
     chip_name: str
