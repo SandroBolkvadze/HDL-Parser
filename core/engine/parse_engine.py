@@ -82,8 +82,7 @@ class ParseEngine:
             self.index += 1
             while self.index < len(self.hdl) and self.hdl[self.index].isalnum():
                 self.index += 1
-        token = self.hdl[old : self.index]
-        return token
+        return self.hdl[old : self.index]
 
     def consume_symbol(self) -> str:
         self.advance()
@@ -93,8 +92,7 @@ class ParseEngine:
             and not self.hdl[self.index] in [" ", "\n"]
         ):
             self.index += 1
-        symbol = self.hdl[old : self.index]
-        return symbol
+        return self.hdl[old : self.index]
 
     def consume_pin_name(self) -> str:
         token = self.consume_token()
