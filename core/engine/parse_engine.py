@@ -1,12 +1,29 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
+from typing import Protocol
+
+from core.chip_description import ChipDescription
 from core.connection import SubBus, Connection, ChipConnection
 from core.pin import Pin
 from core.utils import is_integer
 
 
-class ParseEngine:
-    def __init__(self, hdl: str) -> None:
+class ParseEngine(Protocol):
+    def parse(self, hdl: str) -> ChipDescription:
+        pass
+
+class DefaultParseEngine:
+    def __init__(self):
+        self.hdl = ""
+        self.index = 0
+        self.chip_name = ""
+        self.input_pins: list[Pin] = []
+        self.output_pins: list[Pin] = []
+        self.chip_parts: list[str] = []
+        self.chip_connections: list[ChipConnection] = []
+
+    def reset(self, hdl: str) -> None:
         self.hdl = hdl
         self.index = 0
         self.chip_name = ""
@@ -15,9 +32,16 @@ class ParseEngine:
         self.chip_parts: list[str] = []
         self.chip_connections: list[ChipConnection] = []
 
-    def parse(self) -> None:
-        self.advance()
+    def parse(self, hdl: str) -> ChipDescription:
+        self.reset(hdl)
         self.parse_declaration()
+        return ChipDescription(
+            self.chip_name,
+            self.input_pins,
+            self.output_pins,
+            self.chip_parts,
+            self.chip_connections,
+        )
 
     def advance(self) -> int:
         while self.index < len(self.hdl):

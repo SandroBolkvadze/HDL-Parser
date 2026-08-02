@@ -1,4 +1,4 @@
-from core.engine.parse_engine import ParseEngine
+from core.engine.parse_engine import ParseEngine, DefaultParseEngine
 
 if __name__ == "__main__":
     hdl = """
@@ -13,10 +13,11 @@ if __name__ == "__main__":
     }
     """
 
-    engine = ParseEngine(hdl)
-    engine.parse()
+    engine = DefaultParseEngine()
+    chip_description = engine.parse(hdl)
 
-    print(engine.chip_name)
-    print(engine.input_pins)
-    print(engine.output_pins)
-    print(engine.chip_connections)
+    print(chip_description.chip_name)
+    print(chip_description.input_pins)
+    print(chip_description.output_pins)
+    print(chip_description.chip_parts)
+    print(chip_description.chip_connections)
