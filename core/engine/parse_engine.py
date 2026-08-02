@@ -119,7 +119,6 @@ class ParseEngine:
         return self.index
 
     def consume_expected_symbol(self, expected_symbol: str) -> int:
-        self.advance()
         symbol = self.consume_symbol()
         if symbol != expected_symbol:
             raise Exception(
