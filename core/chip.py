@@ -1,10 +1,10 @@
 from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import Protocol, Mapping
 
-from core.connection import ChipConnection
+from core.chip_description import ChipPart, ChipDescription
 from core.pin import Pin
-
 
 class Chip(Protocol):
     def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
@@ -13,10 +13,10 @@ class Chip(Protocol):
 @dataclass
 class CircuitChip:
     chip_name: str
-    ins: list[Pin]
-    outs: list[Pin]
-    chip_parts: list[CircuitChip]
-    chip_connections: list[ChipConnection]
+    input_pins: list[Pin]
+    output_pins: list[Pin]
+    chip_parts: list[ChipPart]
+    chips: list[CircuitChip]
 
     def forward(self, **kwargs: Mapping[str, int]) -> Mapping[str, int]:
         pass

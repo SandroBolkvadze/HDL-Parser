@@ -13,8 +13,3 @@ class Connection:
     left: SubBus
     right: SubBus
 
-
-@dataclass
-class ChipConnection:
-    chip_name: str
-    connection: Connection

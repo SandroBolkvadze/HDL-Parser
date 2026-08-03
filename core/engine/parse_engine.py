@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
 from typing import Protocol
 
-from core.chip_description import ChipDescription
-from core.connection import SubBus, Connection, ChipConnection
+from core.chip_description import ChipDescription, ChipPart
+from core.connection import SubBus, Connection
 from core.pin import Pin
 from core.utils import is_integer
 
@@ -20,8 +19,7 @@ class DefaultParseEngine:
         self.chip_name = ""
         self.input_pins: list[Pin] = []
         self.output_pins: list[Pin] = []
-        self.chip_parts: list[str] = []
-        self.chip_connections: list[ChipConnection] = []
+        self.chip_parts: list[ChipPart] = []
 
     def reset(self, hdl: str) -> None:
         self.hdl = hdl
@@ -29,8 +27,7 @@ class DefaultParseEngine:
         self.chip_name = ""
         self.input_pins: list[Pin] = []
         self.output_pins: list[Pin] = []
-        self.chip_parts: list[str] = []
-        self.chip_connections: list[ChipConnection] = []
+        self.chip_parts: list[ChipPart] = []
 
     def parse(self, hdl: str) -> ChipDescription:
         self.reset(hdl)
@@ -40,7 +37,6 @@ class DefaultParseEngine:
             self.input_pins,
             self.output_pins,
             self.chip_parts,
-            self.chip_connections,
         )
 
     def advance(self) -> int:
@@ -264,18 +260,20 @@ class DefaultParseEngine:
 
     def parse_chip_part(self) -> int:
         chip_name = self.consume_chip_name()
-        self.chip_parts.append(chip_name)
 
         self.consume_expected_symbol("(")
 
+        connections: list[Connection] = []
         while self.peek() != ")":
             connection = self.parse_connection()
-            self.chip_connections.append(ChipConnection(chip_name, connection))
+            connections.append(connection)
 
             if self.peek() == ")":
                 break
 
             self.consume_expected_symbol(",")
+
+        self.chip_parts.append(ChipPart(chip_name, connections))
 
         self.consume_expected_symbol(")")
 
