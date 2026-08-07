@@ -2,21 +2,28 @@ from core.engine.parse_engine import ParseEngine, DefaultParseEngine
 
 if __name__ == "__main__":
     hdl = """
-    CHIP Mux4Way16 {
-        IN
-         a;
-        OUT
-         b;
-        
-        PARTS:
-        Mux16(a     =a, b=b, sel=sel[0], out=aMuxb);
-    }
+    // This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/1/And.hdl
+**
+ * And gate:
+ * if (a and b) out = 1, else out = 0 
+ */
+CHIP And {
+    IN a, b;
+    OUT out;
+    
+    PARTS:
+    Nand(a=a, b=b, out=aNandb);
+    Not(in=aNandb, out=out);
+}
     """
 
     engine = DefaultParseEngine()
-    chip_description = engine.parse(hdl)
+    engine.parse(hdl)
 
-    print(chip_description.chip_name)
-    print(chip_description.input_pins)
-    print(chip_description.output_pins)
-    print(chip_description.chip_parts)
+    print(engine.chip_name)
+    print(engine.input_pins)
+    print(engine.output_pins)
+    print(engine.chip_parts)

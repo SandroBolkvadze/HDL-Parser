@@ -2,14 +2,13 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from core.chip_description import ChipDescription, ChipPart
-from core.connection import SubBus, Connection
+from core.chip_description import ChipPart
+from core.connection import Connection
 from core.pin import Pin
-from core.utils import is_integer
 
 
 class ParseEngine(Protocol):
-    def parse(self, hdl: str) -> ChipDescription:
+    def parse(self, hdl: str) -> None:
         pass
 
 class DefaultParseEngine:
@@ -17,8 +16,8 @@ class DefaultParseEngine:
         self.hdl = ""
         self.index = 0
         self.chip_name = ""
-        self.input_pins: list[Pin] = []
-        self.output_pins: list[Pin] = []
+        self.input_pins: list[str] = []
+        self.output_pins: list[str] = []
         self.chip_parts: list[ChipPart] = []
 
     def reset(self, hdl: str) -> None:
@@ -29,15 +28,13 @@ class DefaultParseEngine:
         self.output_pins: list[Pin] = []
         self.chip_parts: list[ChipPart] = []
 
-    def parse(self, hdl: str) -> ChipDescription:
+    def parse(self, hdl: str) -> None:
         self.reset(hdl)
         self.parse_declaration()
-        return ChipDescription(
-            self.chip_name,
-            self.input_pins,
-            self.output_pins,
-            self.chip_parts,
-        )
+
+    def peek(self) -> str:
+        self.advance()
+        return self.hdl[self.index] if self.index < len(self.hdl) else ""
 
     def advance(self) -> int:
         while self.index < len(self.hdl):
@@ -51,41 +48,9 @@ class DefaultParseEngine:
                 break
         return self.index
 
-    def peek(self) -> str:
-        self.advance()
-        return self.hdl[self.index] if self.index < len(self.hdl) else ""
-
-    def consume_comment_to_end_line(self) -> int:
-        if self.hdl.find("//", self.index) != self.index:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment starting with '//'"
-            )
-        tmp = self.hdl.find("\n", self.index + 2)
-        if tmp == -1:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment to end with 'newline'"
-            )
-        self.index = tmp + 1
-        return self.index
-
-    def consume_comment_until_close(self) -> int:
-        if self.hdl.find("/*", self.index) != self.index:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment starting with '/*'"
-            )
-        tmp = self.hdl.find("*/", self.index + 2)
-        if tmp == -1:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment to end with '*/'"
-            )
-        self.index = tmp + 2
-        return self.index
-
     def consume_comment(self) -> int:
-        if self.hdl[self.index] != "/" or self.index + 1 > len(self.hdl):
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment"
-            )
+        if not self.hdl[self.index:].startswith("//") or not self.hdl[self.index:].startswith("/*"):
+            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment")
 
         if self.hdl[self.index + 1] == "/":
             self.consume_comment_to_end_line()
@@ -93,6 +58,17 @@ class DefaultParseEngine:
         if self.hdl[self.index + 1] == "*":
             self.consume_comment_until_close()
 
+        return self.index
+
+    def consume_comment_to_end_line(self) -> int:
+        self.index = self.hdl.find("\n", self.index + 2) + 1
+        return self.index
+
+    def consume_comment_until_close(self) -> int:
+        tmp = self.hdl.find("*/", self.index + 2)
+        if tmp == -1:
+            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: Expected end of comment '*/'")
+        self.index = self.hdl.find("*/", self.index + 2) + 2
         return self.index
 
     def consume_token(self) -> str:
@@ -109,53 +85,38 @@ class DefaultParseEngine:
         old = self.index
         if self.index < len(self.hdl) and (
             not self.hdl[self.index].isalnum()
-            and not self.hdl[self.index] in [" ", "\n"]
         ):
             self.index += 1
         return self.hdl[old : self.index]
 
-    def consume_pin_name(self) -> str:
+    def consume_nonempty_token(self, err: str) -> str:
         token = self.consume_token()
         if len(token) == 0:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected pin name"
-            )
+            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: {err}")
         return token
 
-    def consume_chip_name(self) -> str:
-        token = self.consume_token()
-        if len(token) == 0:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Expected GateClass name"
-            )
-        return token
-
-    def consume_expected_token(self, expected_token: str) -> int:
+    def consume_expected_token(self, expected_token: str) -> str:
         token = self.consume_token()
         if token != expected_token:
             raise Exception(
                 f"Line {self.hdl.count('\n', 0, self.index)}: Missing '{expected_token}' keyword"
             )
-        return self.index
+        return token
 
-    def consume_expected_symbol(self, expected_symbol: str) -> int:
+    def consume_expected_symbol(self, expected_symbol: str) -> str:
         symbol = self.consume_symbol()
         if symbol != expected_symbol:
             raise Exception(
                 f"Line {self.hdl.count('\n', 0, self.index)}: Missing '{expected_symbol}'"
             )
-        return self.index
+        return symbol
 
     def parse_declaration(self) -> int:
         # consume 'CHIP' keyword
         self.consume_expected_token("CHIP")
 
         # consume chip name
-        chip_name = self.consume_token()
-        if len(chip_name) == 0:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Missing chip name"
-            )
+        self.chip_name = self.consume_nonempty_token("Missing chip name")
 
         # consume '{' symbol
         self.consume_expected_symbol("{")
@@ -174,6 +135,7 @@ class DefaultParseEngine:
 
         # parse chip implementation
         self.parse_implementation()
+
         return self.index
 
     def parse_interface(self) -> int:
@@ -182,6 +144,7 @@ class DefaultParseEngine:
 
         # parse output pins
         self.parse_output_interface()
+
         return self.index
 
     def parse_input_interface(self) -> int:
@@ -194,12 +157,12 @@ class DefaultParseEngine:
         self.output_pins = self.parse_interface_pins()
         return self.index
 
-    def parse_interface_pins(self) -> list[Pin]:
-        pins: list[Pin] = []
+    def parse_interface_pins(self) -> list[str]:
+        pins: list[str] = []
+
         while self.peek() != ";":
             # parse & save pin name
-            pin = self.parse_interface_pin_token()
-            pins.append(pin)
+            pins.append(self.consume_nonempty_token("Pin name expected"))
 
             if self.peek() == ";":
                 break
@@ -211,139 +174,38 @@ class DefaultParseEngine:
         self.consume_expected_symbol(";")
         return pins
 
-    def parse_interface_pin_token(self) -> Pin:
-        # parse pin name
-        pin_name = self.consume_pin_name()
-
-        # check if pin is multi-bit
-        if self.peek() != "[":
-            return Pin(pin_name, 1)
-
-        # consume '[' symbol
-        self.consume_expected_symbol("[")
-
-        # consume pin width
-        old = self.index
-        while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
-            self.index += 1
-        width = self.hdl[old : self.index]
-
-        if self.peek() != "]":
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Pin '{pin_name}' missing ']'"
-            )
-
-        # consume ']' symbol
-        self.consume_expected_symbol("]")
-
-        # check if pin width is numeric
-        if not is_integer(width):
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{width}] has invalid bus width"
-            )
-        if int(width) <= 0:
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{width}] negative bus widths are not allowed"
-            )
-
-        return Pin(pin_name, int(width))
-
     def parse_implementation(self) -> int:
         self.consume_expected_token("PARTS")
 
         self.consume_expected_symbol(":")
 
         while self.peek() != "}":
-            self.parse_chip_part()
+            self.chip_parts.append(self.parse_chip_part())
 
         return self.index
 
-    def parse_chip_part(self) -> int:
-        chip_name = self.consume_chip_name()
+    def parse_chip_part(self) -> ChipPart:
+        chip_name = self.consume_nonempty_token("A GateClass name is expected")
 
         self.consume_expected_symbol("(")
 
         connections: list[Connection] = []
-        while self.peek() != ")":
-            connection = self.parse_connection()
-            connections.append(connection)
 
+        while self.peek() != ")":
+            connections.append(self.parse_connection())
             if self.peek() == ")":
                 break
-
             self.consume_expected_symbol(",")
-
-        self.chip_parts.append(ChipPart(chip_name, connections))
 
         self.consume_expected_symbol(")")
 
         self.consume_expected_symbol(";")
 
-        return self.index
+        return ChipPart(chip_name, connections)
 
     def parse_connection(self) -> Connection:
-        left = self.parse_implementation_pin_token(False)
-
+        left = self.consume_nonempty_token("A pin name is expected")
         self.consume_expected_symbol("=")
-
-        right = self.parse_implementation_pin_token(True)
+        right = self.consume_nonempty_token("A pin name is expected")
 
         return Connection(left, right)
-
-    def parse_implementation_pin_token(self, is_right: bool) -> SubBus:
-        # consume pin name
-        pin_name = self.consume_pin_name()
-
-        # check if pin is right
-        if is_right and pin_name in ["true", "false"]:
-            return SubBus(pin_name, (0, -1))
-
-        if self.peek() != "[":
-            return SubBus(pin_name, (0, -1))
-
-        # consume '[' symbol
-        self.consume_expected_symbol("[")
-
-        # consume bus pins
-        old = self.index
-        while self.index < len(self.hdl) and self.hdl[self.index] not in ["]", "\n"]:
-            self.index += 1
-        sub_bus = self.hdl[old : self.index]
-
-        if self.peek() != "]":
-            raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Pin '{pin_name}' missing ']'"
-            )
-
-        # consume ']' symbol
-        self.consume_expected_symbol("]")
-
-        # check sub bus specification
-        sub_bus_parts = sub_bus.split("..")
-
-        if len(sub_bus_parts) == 1 and is_integer(sub_bus_parts[0]):
-            width = int(sub_bus_parts[0])
-            if width < 0:
-                raise Exception(
-                    f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal"
-                )
-            return SubBus(pin_name, (width, width))
-
-        if (
-            len(sub_bus_parts) == 2
-            and is_integer(sub_bus_parts[0])
-            and is_integer(sub_bus_parts[1])
-        ):
-            if int(sub_bus_parts[0]) < 0 or int(sub_bus_parts[1]) < 0:
-                raise Exception(
-                    f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{sub_bus}] negative bit numbers are illegal"
-                )
-            if int(sub_bus_parts[0]) > int(sub_bus_parts[1]):
-                raise Exception(
-                    f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{sub_bus}] left bit number should be lower or equal to the right bit number"
-                )
-            return SubBus(pin_name, (int(sub_bus_parts[0]), int(sub_bus_parts[1])))
-
-        raise Exception(
-            f"Line {self.hdl.count('\n', 0, self.index)}: {pin_name}[{sub_bus}] has an invalid sub bus specification"
-        )

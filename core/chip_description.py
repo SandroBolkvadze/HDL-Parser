@@ -9,10 +9,3 @@ from core.pin import Pin
 class ChipPart:
     chip_name: str
     chip_connections: list[Connection]
-
-@dataclass
-class ChipDescription:
-    chip_name: str
-    input_pins: list[Pin]
-    output_pins: list[Pin]
-    chip_parts: list[ChipPart]
