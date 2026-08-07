@@ -20,4 +20,3 @@ if __name__ == "__main__":
     print(chip_description.input_pins)
     print(chip_description.output_pins)
     print(chip_description.chip_parts)
-    print(chip_description.chip_connections)
