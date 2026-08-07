@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
+from pygments.lexers import hdl
+
 from core.chip_description import ChipPart
 from core.connection import Connection
 from core.pin import Pin
@@ -49,14 +51,10 @@ class DefaultParseEngine:
         return self.index
 
     def consume_comment(self) -> int:
-        if not self.hdl[self.index:].startswith("//") or not self.hdl[self.index:].startswith("/*"):
-            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: Expected comment")
-
-        if self.hdl[self.index + 1] == "/":
-            self.consume_comment_to_end_line()
-
         if self.hdl[self.index + 1] == "*":
             self.consume_comment_until_close()
+        else:
+            self.consume_comment_to_end_line()
 
         return self.index
 
@@ -66,9 +64,7 @@ class DefaultParseEngine:
 
     def consume_comment_until_close(self) -> int:
         tmp = self.hdl.find("*/", self.index + 2)
-        if tmp == -1:
-            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: Expected end of comment '*/'")
-        self.index = self.hdl.find("*/", self.index + 2) + 2
+        self.index = tmp + 2 if tmp != -1 else len(hdl)
         return self.index
 
     def consume_token(self) -> str:
