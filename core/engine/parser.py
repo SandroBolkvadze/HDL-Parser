@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from core.atomic_chip import ATOMIC_CHIPS
-from core.circuit_chip import CircuitChip
-from core.chip import Chip
-from core.chip_part import ChipPart, Connection
+from core.chips.atomic_chip import ATOMIC_CHIPS
+from core.chips.circuit_chip import CircuitChip
+from core.chips.chip import Chip
+from core.chips.chip_part import ChipPart, Connection
 from core.engine.loader import ChipLoader
 
 class Parser(Protocol):

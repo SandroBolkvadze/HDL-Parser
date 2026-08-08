@@ -4,8 +4,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import DefaultDict
 
-from core.chip import Chip
-from core.chip_part import ChipPart
+from core.chips.chip import Chip
+from core.chips.chip_part import ChipPart
 from core.utils import topo_sort
 
 @dataclass
@@ -34,8 +34,6 @@ class CircuitChip:
                 if len(outs & ins): graph[i].append(j)
 
         topo_sorted_nodes = topo_sort(nodes, graph)
-        assert(topo_sorted_nodes is not None)
-
         resolved: dict[str, int] = inputs | {input_pin: 0 for input_pin in self.input_pins if input_pin not in inputs}
 
         for i in topo_sorted_nodes:

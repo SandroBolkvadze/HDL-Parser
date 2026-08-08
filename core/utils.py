@@ -1,8 +1,6 @@
 from collections import deque, defaultdict
-from typing import Optional, DefaultDict
 
-
-def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> Optional[list[int]]:
+def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> list[int]:
     ins: dict[int, int] = defaultdict(int)
     topo_sorted: list[int] = []
 
@@ -20,4 +18,4 @@ def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> Optional[list[in
             if ins[v] == 0:
                 q.append(v)
 
-    return topo_sorted if len(topo_sorted) == len(nodes) else None
+    return topo_sorted
