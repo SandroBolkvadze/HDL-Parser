@@ -1,12 +1,15 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Protocol
 
 from pygments.lexers import hdl
 
-from core.chip_description import ChipPart
-from core.connection import Connection
-from core.pin import Pin
+from core.atomic_chip import ATOMIC_CHIPS
+from core.circuit_chip import CircuitChip
+from core.chip import Chip
+from core.chip_part import ChipPart, Connection
+from core.engine.loader import ChipLoader
 
 
 class ParseEngine(Protocol):
@@ -14,25 +17,39 @@ class ParseEngine(Protocol):
         pass
 
 class DefaultParseEngine:
-    def __init__(self):
+    def __init__(self, loader: ChipLoader):
+        self.loader = loader
         self.hdl = ""
+        self.hdl_path = ""
         self.index = 0
         self.chip_name = ""
         self.input_pins: list[str] = []
         self.output_pins: list[str] = []
         self.chip_parts: list[ChipPart] = []
+        self.chips: dict[str, Chip] = {}
 
-    def reset(self, hdl: str) -> None:
+    def reset(self, chip_name: str, hdl: str, hdl_path: str) -> None:
         self.hdl = hdl
+        self.hdl_path = hdl_path
         self.index = 0
-        self.chip_name = ""
-        self.input_pins: list[Pin] = []
-        self.output_pins: list[Pin] = []
+        self.chip_name = chip_name
+        self.input_pins: list[str] = []
+        self.output_pins: list[str] = []
         self.chip_parts: list[ChipPart] = []
+        self.chips: dict[str, Chip] = {}
 
-    def parse(self, hdl: str) -> None:
-        self.reset(hdl)
+    def parse(self, chip_name: str) -> Chip:
+        hdl_path = self.loader.path_for(chip_name)
+
+        if hdl_path is None:
+            if chip_name in ATOMIC_CHIPS:
+                return ATOMIC_CHIPS[chip_name]
+            raise Exception(f"Chip {chip_name} not found in working and builtin directories")
+
+        hdl = self.loader.load(chip_name)
+        self.reset(chip_name, hdl, hdl_path)
         self.parse_declaration()
+        return CircuitChip(self.chip_name, self.input_pins, self.output_pins, self.chip_parts, self.chips)
 
     def peek(self) -> str:
         self.advance()
@@ -59,7 +76,8 @@ class DefaultParseEngine:
         return self.index
 
     def consume_comment_to_end_line(self) -> int:
-        self.index = self.hdl.find("\n", self.index + 2) + 1
+        tmp = self.hdl.find("\n", self.index + 1)
+        self.index = tmp + 1 if tmp != -1 else len(hdl)
         return self.index
 
     def consume_comment_until_close(self) -> int:
@@ -79,23 +97,21 @@ class DefaultParseEngine:
     def consume_symbol(self) -> str:
         self.advance()
         old = self.index
-        if self.index < len(self.hdl) and (
-            not self.hdl[self.index].isalnum()
-        ):
+        if self.index < len(self.hdl) and not self.hdl[self.index].isalnum():
             self.index += 1
         return self.hdl[old : self.index]
 
     def consume_nonempty_token(self, err: str) -> str:
         token = self.consume_token()
         if len(token) == 0:
-            raise Exception(f"Line {self.hdl.count('\n', 0, self.index)}: {err}")
+            raise Exception(f"In HDL file {self.hdl_path}, Line {self.hdl.count('\n', 0, self.index) + 1}, {err}")
         return token
 
     def consume_expected_token(self, expected_token: str) -> str:
         token = self.consume_token()
         if token != expected_token:
             raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Missing '{expected_token}' keyword"
+                f"In HDL file {self.hdl_path}, Line {self.hdl.count('\n', 0, self.index) + 1}, Missing '{expected_token}' keyword"
             )
         return token
 
@@ -103,7 +119,7 @@ class DefaultParseEngine:
         symbol = self.consume_symbol()
         if symbol != expected_symbol:
             raise Exception(
-                f"Line {self.hdl.count('\n', 0, self.index)}: Missing '{expected_symbol}'"
+                f"In HDL file {self.hdl_path}, Line {self.hdl.count('\n', 0, self.index) + 1}, Missing '{expected_symbol}'"
             )
         return symbol
 
@@ -113,6 +129,9 @@ class DefaultParseEngine:
 
         # consume chip name
         self.chip_name = self.consume_nonempty_token("Missing chip name")
+
+        if self.chip_name != Path(self.hdl_path).stem:
+            raise Exception(f"In HDL file {self.hdl_path}, Line {self.hdl.count('\n', 0, self.index) + 1}, Chip name doesn't match HDL name")
 
         # consume '{' symbol
         self.consume_expected_symbol("{")
@@ -183,12 +202,15 @@ class DefaultParseEngine:
     def parse_chip_part(self) -> ChipPart:
         chip_name = self.consume_nonempty_token("A GateClass name is expected")
 
+        if chip_name not in self.chips:
+            self.chips[chip_name] = DefaultParseEngine(self.loader).parse(chip_name)
+
         self.consume_expected_symbol("(")
 
         connections: list[Connection] = []
 
         while self.peek() != ")":
-            connections.append(self.parse_connection())
+            connections.append(self.parse_connection(chip_name))
             if self.peek() == ")":
                 break
             self.consume_expected_symbol(",")
@@ -199,7 +221,7 @@ class DefaultParseEngine:
 
         return ChipPart(chip_name, connections)
 
-    def parse_connection(self) -> Connection:
+    def parse_connection(self, chip_name: str) -> Connection:
         left = self.consume_nonempty_token("A pin name is expected")
         self.consume_expected_symbol("=")
         right = self.consume_nonempty_token("A pin name is expected")

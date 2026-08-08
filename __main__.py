@@ -1,16 +1,11 @@
-from core.engine.parse_engine import ParseEngine, DefaultParseEngine
+from pathlib import Path
+
+from core.engine.loader import DefaultChipLoader
+from core.engine.parser import DefaultParseEngine
 
 if __name__ == "__main__":
-    hdl = """
-        // This file is part of www.nand2tetris.org
-        **
-         * And gate:
-         * if (a and b) out = 1, else out = 0 
-         */
-    """
-
-    engine = DefaultParseEngine()
-    engine.parse(hdl)
+    engine = DefaultParseEngine(DefaultChipLoader(Path("/home/sandro/code/nand2tetris/HDL-Parser/test")))
+    engine.parse("And")
 
     print(engine.chip_name)
     print(engine.input_pins)
