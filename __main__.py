@@ -1,13 +1,17 @@
 from pathlib import Path
 
 from core.engine.loader import DefaultChipLoader
-from core.engine.parser import DefaultParseEngine
+from core.engine.parser import DefaultParser
 
 if __name__ == "__main__":
-    engine = DefaultParseEngine(DefaultChipLoader(Path("/home/sandro/code/nand2tetris/HDL-Parser/test")))
-    engine.parse("And")
+    parser = DefaultParser(DefaultChipLoader(Path("/home/sandro/code/nand2tetris/HDL-Parser/test")))
+    chip = parser.parse("And")
 
-    print(engine.chip_name)
-    print(engine.input_pins)
-    print(engine.output_pins)
-    print(engine.chip_parts)
+    print(parser.chip_name)
+    print(parser.input_pins)
+    print(parser.output_pins)
+    print(parser.chip_parts)
+    print(parser.chips)
+
+    out = chip.forward({"a": 1, "b": 1})
+    print(out)
