@@ -47,9 +47,12 @@ class TestParser:
 
 def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
     passed = 0
-    for _i, testcase in enumerate(testcases):
+    for i, testcase in enumerate(testcases):
         outputs = chip.forward(testcase.inputs)
         if outputs == testcase.expected:
             passed += 1
+            print(f"Testcase {i} passed")
         else:
-            pass
+            print(f"Testcase {i} failed; expected {testcase.expected}; got {outputs}")
+
+    print(f"Testcases passed {passed} / {len(testcases)}")
