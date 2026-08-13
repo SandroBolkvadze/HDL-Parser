@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import dataclass
-from typing import DefaultDict
 
 from core.chips.chip import Chip
 from core.chips.chip_part import ChipPart
-from core.utils import topo_sort
+from core.utils import topo_sort, build_graph_for
 
 @dataclass
 class CircuitChip:
@@ -24,29 +22,22 @@ class CircuitChip:
 
     def forward(self, inputs: dict[str, int]) -> dict[str, int]:
         nodes = [i for i in range(len(self.chip_parts))]
-        graph: DefaultDict[int, list[int]] = defaultdict(list)
-
-        for i, chip_part_i in enumerate(self.chip_parts):
-            outs = set([connection.right for connection in chip_part_i.chip_connections if connection.left in self.chips[chip_part_i.chip_name].get_output_pins()])
-            for j, chip_part_j in enumerate(self.chip_parts):
-                if j == i: continue
-                ins = set([connection.right for connection in chip_part_j.chip_connections if connection.left in self.chips[chip_part_j.chip_name].get_input_pins()])
-                if len(outs & ins): graph[i].append(j)
+        graph = build_graph_for(self.chip_parts, self.chips)
 
         topo_sorted_nodes = topo_sort(nodes, graph)
         resolved: dict[str, int] = inputs | {input_pin: 0 for input_pin in self.input_pins if input_pin not in inputs}
 
         for i in topo_sorted_nodes:
             chip_part = self.chip_parts[i]
-
+            chip_ins   = [connection for connection in chip_part.chip_connections if connection.left in self.chips[chip_part.chip_name].get_input_pins()]
+            chip_outs  = [connection for connection in chip_part.chip_connections if connection.left in self.chips[chip_part.chip_name].get_output_pins()]
             chip_input: dict[str, int] = {}
-            for connection in chip_part.chip_connections:
-                if connection.left in self.chips[chip_part.chip_name].get_input_pins():
-                    chip_input[connection.left] = resolved[connection.right]
+
+            for connection in chip_ins:
+                chip_input[connection.left] = resolved[connection.right]
 
             chip_output = self.chips[chip_part.chip_name].forward(chip_input)
-            for connection in chip_part.chip_connections:
-                if connection.left in self.chips[chip_part.chip_name].get_output_pins():
-                    resolved[connection.right] = chip_output[connection.left]
+            for connection in chip_outs:
+                resolved[connection.right] = chip_output[connection.left]
 
         return {out_pin: resolved[out_pin] for out_pin in self.output_pins}

@@ -3,7 +3,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Mapping
 
-
 @dataclass
 class Nand:
     def get_input_pins(self) -> list[str]:
@@ -57,4 +56,7 @@ class Or:
 
 ATOMIC_CHIPS = {
     "Nand": Nand(),
+    "Not": Not(),
+    "And": And(),
+    "Or": Or(),
 }

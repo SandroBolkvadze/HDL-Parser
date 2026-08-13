@@ -2,45 +2,28 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from core.chips.atomic_chip import ATOMIC_CHIPS
-from core.chips.circuit_chip import CircuitChip
-from core.chips.chip import Chip
+from core.chips.chip_description import ChipDescription
 from core.chips.chip_part import ChipPart, Connection
-from core.engine.loader import ChipLoader
 
-class Parser(Protocol):
-    def parse(self, hdl: str) -> None:
+class ChipParser(Protocol):
+    def parse(self, hdl: str) -> ChipDescription:
         pass
 
-class DefaultParser:
-    def __init__(self, loader: ChipLoader):
-        self.loader = loader
+class DefaultChipParser:
+    def __init__(self) -> None:
         self.hdl = ""
         self.index = 0
-        self.chip_name = ""
-        self.input_pins: list[str] = []
-        self.output_pins: list[str] = []
-        self.chip_parts: list[ChipPart] = []
-        self.chips: dict[str, Chip] = {}
+        self.chip_description = ChipDescription()
 
-    def reset(self, chip_name: str, hdl: str) -> None:
+    def reset(self, hdl: str) -> None:
         self.hdl = hdl
         self.index = 0
-        self.chip_name = chip_name
-        self.input_pins: list[str] = []
-        self.output_pins: list[str] = []
-        self.chip_parts: list[ChipPart] = []
-        self.chips: dict[str, Chip] = {}
+        self.chip_description = ChipDescription()
 
-    def parse(self, chip_name: str) -> Chip:
-        hdl_path = self.loader.path_for(chip_name)
-        if hdl_path is None:
-            return ATOMIC_CHIPS[chip_name]
-
-        hdl = self.loader.load(chip_name)
-        self.reset(chip_name, hdl)
+    def parse(self, hdl: str) -> ChipDescription:
+        self.reset(hdl)
         self.parse_declaration()
-        return CircuitChip(self.chip_name, self.input_pins, self.output_pins, self.chip_parts, self.chips)
+        return self.chip_description
 
     def peek(self) -> str:
         self.advance()
@@ -97,7 +80,7 @@ class DefaultParser:
         self.consume_token()
 
         # consume chip name
-        self.chip_name = self.consume_token()
+        self.chip_description.chip_name = self.consume_token()
 
         # consume '{' symbol
         self.consume_symbol()
@@ -131,13 +114,13 @@ class DefaultParser:
     def parse_input_interface(self) -> int:
         # consume 'IN' keyword
         self.consume_token()
-        self.input_pins = self.parse_interface_pins()
+        self.chip_description.input_pins = self.parse_interface_pins()
         return self.index
 
     def parse_output_interface(self) -> int:
         # consume 'OUT' keyword
         self.consume_token()
-        self.output_pins = self.parse_interface_pins()
+        self.chip_description.output_pins = self.parse_interface_pins()
         return self.index
 
     def parse_interface_pins(self) -> list[str]:
@@ -163,14 +146,12 @@ class DefaultParser:
         self.consume_symbol()
 
         while self.peek() != "}":
-            self.chip_parts.append(self.parse_chip_part())
+            self.chip_description.chip_parts.append(self.parse_chip_part())
 
         return self.index
 
     def parse_chip_part(self) -> ChipPart:
         chip_name = self.consume_token()
-        if chip_name not in self.chips:
-            self.chips[chip_name] = DefaultParser(self.loader).parse(chip_name)
 
         self.consume_symbol()
 
