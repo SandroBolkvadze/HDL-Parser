@@ -15,10 +15,11 @@ class ChipBuilder:
     parser: ChipParser
 
     def build(self, chip_name: str) -> Chip:
-        if self.loader.search_for(chip_name) is None:
+        chip_file = f"{chip_name}.hdl"
+        if self.loader.search_for(chip_file) is None:
             return ATOMIC_CHIPS[chip_name]
 
-        hdl = self.loader.load(chip_name)
+        hdl = self.loader.load(chip_file)
         chip_description = self.parser.parse(hdl)
 
         chips: dict[str, Chip] = {}

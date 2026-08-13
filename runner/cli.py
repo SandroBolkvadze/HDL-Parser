@@ -18,7 +18,7 @@ def test(chip_path: str, test_path: str) -> None:
     chip_path = Path(chip_path)
     test_path = Path(test_path)
 
-    chip = ChipBuilder(DefaultLoader(chip_path.parent), DefaultChipParser()).build(chip_path.name)
+    chip = ChipBuilder(DefaultLoader(chip_path.parent), DefaultChipParser()).build(chip_path.stem)
     testcases = TestParser(DefaultLoader(test_path.parent).load(test_path.name)).parse()
 
     run_testcases(chip, testcases)
