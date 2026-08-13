@@ -11,8 +11,8 @@ from infra.loader import Loader
 
 @dataclass
 class ChipBuilder:
-    parser: ChipParser
     loader: Loader
+    parser: ChipParser
 
     def build(self, chip_name: str) -> Chip:
         if self.loader.search_for(chip_name) is None:
