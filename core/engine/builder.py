@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 from core.chips.atomic_chip import ATOMIC_CHIPS
 from core.chips.chip import Chip
@@ -26,4 +26,10 @@ class ChipBuilder:
         for chip_part in chip_description.chip_parts:
             chips[chip_part.chip_name] = self.build(chip_part.chip_name)
 
-        return CircuitChip(chip_description.chip_name, chip_description.input_pins, chip_description.output_pins, chip_description.chip_parts, chips)
+        return CircuitChip(
+            chip_description.chip_name,
+            chip_description.input_pins,
+            chip_description.output_pins,
+            chip_description.chip_parts,
+            chips,
+        )

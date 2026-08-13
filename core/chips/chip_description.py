@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from core.chips.chip_part import ChipPart
 
+
 @dataclass
 class ChipDescription:
     chip_name: str = ""

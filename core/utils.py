@@ -1,8 +1,8 @@
-from collections import deque, defaultdict
-from typing import DefaultDict
+from collections import defaultdict, deque
 
 from core.chips.chip import Chip
 from core.chips.chip_part import ChipPart
+
 
 def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> list[int]:
     ins: dict[int, int] = defaultdict(int)
@@ -24,16 +24,27 @@ def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> list[int]:
 
     return topo_sorted
 
-def build_graph_for(chip_parts: list[ChipPart], chips: dict[str, Chip]) -> dict[int, list[int]]:
-    graph: DefaultDict[int, list[int]] = defaultdict(list)
+
+def build_graph_for(
+    chip_parts: list[ChipPart], chips: dict[str, Chip]
+) -> dict[int, list[int]]:
+    graph: defaultdict[int, list[int]] = defaultdict(list)
 
     for i, chip_part_i in enumerate(chip_parts):
-        outs = set([connection.right for connection in chip_part_i.chip_connections if
-                    connection.left in chips[chip_part_i.chip_name].get_output_pins()])
+        outs = {
+            connection.right
+            for connection in chip_part_i.chip_connections
+            if connection.left in chips[chip_part_i.chip_name].get_output_pins()
+        }
         for j, chip_part_j in enumerate(chip_parts):
-            if j == i: continue
-            ins = set([connection.right for connection in chip_part_j.chip_connections if
-                       connection.left in chips[chip_part_j.chip_name].get_input_pins()])
-            if len(outs & ins): graph[i].append(j)
+            if j == i:
+                continue
+            ins = {
+                connection.right
+                for connection in chip_part_j.chip_connections
+                if connection.left in chips[chip_part_j.chip_name].get_input_pins()
+            }
+            if len(outs & ins):
+                graph[i].append(j)
 
     return graph

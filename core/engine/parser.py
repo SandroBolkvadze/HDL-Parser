@@ -5,9 +5,11 @@ from typing import Protocol
 from core.chips.chip_description import ChipDescription
 from core.chips.chip_part import ChipPart, Connection
 
+
 class ChipParser(Protocol):
     def parse(self, hdl: str) -> ChipDescription:
         pass
+
 
 class DefaultChipParser:
     def __init__(self) -> None:
@@ -31,9 +33,7 @@ class DefaultChipParser:
 
     def advance(self) -> int:
         while self.index < len(self.hdl):
-            if self.hdl[self.index] == " ":
-                self.index += 1
-            elif self.hdl[self.index] == "\n":
+            if self.hdl[self.index] == " " or self.hdl[self.index] == "\n":
                 self.index += 1
             elif self.hdl[self.index] == "/":
                 self.consume_comment()

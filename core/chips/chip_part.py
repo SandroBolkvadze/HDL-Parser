@@ -8,6 +8,7 @@ class ChipPart:
     chip_name: str
     chip_connections: list[Connection]
 
+
 @dataclass
 class Connection:
     left: str
