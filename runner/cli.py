@@ -15,7 +15,7 @@ cli = Typer(
 )
 
 
-@cli.command("chip_tests", no_args_is_help=True)
+@cli.command("test_chip", no_args_is_help=True)
 def test(chip_path_str: str, test_path_str: str) -> None:
     chip_path = Path(chip_path_str)
     test_path = Path(test_path_str)

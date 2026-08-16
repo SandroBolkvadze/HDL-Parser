@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 from core.chips.chip import Chip
 from core.chips.chip_part import ChipPart
-from core.graph import topo_sort
+from core.general.graph import topo_sort
 
 @dataclass
 class CircuitChip:
