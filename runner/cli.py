@@ -6,14 +6,13 @@ from core.engine.builder import ChipBuilder
 from core.engine.parser import DefaultChipParser
 from infra.loader import DefaultLoader
 
-from tests.tester import TestParser, run_testcases
+from runner.tester import TestParser, run_testcases
 
 cli = Typer(
     name="HDL Parser",
     no_args_is_help=True,
     add_completion=False,
 )
-
 
 @cli.command("test_chip", no_args_is_help=True)
 def test(chip_path_str: str, test_path_str: str) -> None:

@@ -37,8 +37,8 @@ class TestParser:
             outs_int = [int(elem) for elem in outs_str]
             testcases.append(
                 Testcase(
-                    dict(zip(ins_pins, ins_int, strict=False)),
-                    dict(zip(outs_pins, outs_int, strict=False)),
+                    dict(zip(ins_pins, ins_int)),
+                    dict(zip(outs_pins, outs_int)),
                 )
             )
 
