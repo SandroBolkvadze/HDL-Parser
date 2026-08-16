@@ -33,7 +33,7 @@ class DefaultChipParser:
 
     def advance(self) -> int:
         while self.index < len(self.hdl):
-            if self.hdl[self.index] == " " or self.hdl[self.index] == "\n":
+            if self.hdl[self.index] in [" ", "\t", "\n"]:
                 self.index += 1
             elif self.hdl[self.index] == "/":
                 self.consume_comment()
