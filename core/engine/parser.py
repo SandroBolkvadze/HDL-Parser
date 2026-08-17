@@ -141,8 +141,10 @@ class DefaultChipParser:
         return pins
 
     def parse_implementation(self) -> int:
+        # consume 'PARTS' keyword
         self.consume_token()
 
+        # consume ':' symbol
         self.consume_symbol()
 
         while self.peek() != "}":
@@ -151,20 +153,27 @@ class DefaultChipParser:
         return self.index
 
     def parse_chip_part(self) -> ChipPart:
+        # consume chip name
         chip_name = self.consume_token()
 
+        # consume '(' sumbol
         self.consume_symbol()
 
         connections: list[Connection] = []
 
         while self.peek() != ")":
             connections.append(self.parse_connection())
+
             if self.peek() == ")":
                 break
+
+            # consume ',' symbol
             self.consume_symbol()
 
+        # consume ')' symbol
         self.consume_symbol()
 
+        # consume ';' symbol
         self.consume_symbol()
 
         return ChipPart(chip_name, connections)
@@ -173,7 +182,7 @@ class DefaultChipParser:
         # parse left pin
         left = self.consume_token()
 
-        # consume '='
+        # consume '=' symbol
         self.consume_symbol()
 
         # parse right pin
