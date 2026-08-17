@@ -5,7 +5,6 @@ from typer import Typer
 from core.engine.builder import ChipBuilder
 from core.engine.parser import DefaultChipParser
 from infra.loader import DefaultLoader
-
 from runner.tester import TestParser, run_testcases
 
 cli = Typer(
@@ -14,14 +13,26 @@ cli = Typer(
     add_completion=False,
 )
 
-@cli.command("test_chip", no_args_is_help=True)
-def test(chip_path_str: str, test_path_str: str) -> None:
-    chip_path = Path(chip_path_str)
-    test_path = Path(test_path_str)
 
-    chip = ChipBuilder(DefaultLoader(chip_path.parent), DefaultChipParser()).build(
-        chip_path.stem
+def test_chip(hdl_path: Path, tst_path: Path) -> None:
+    chip = ChipBuilder(DefaultLoader(hdl_path.parent), DefaultChipParser()).build(
+        hdl_path.stem
     )
-    testcases = TestParser(DefaultLoader(test_path.parent).load(test_path.name)).parse()
-
+    testcases = TestParser().parse(DefaultLoader(tst_path.parent).load(tst_path.name))
     run_testcases(chip, testcases)
+
+
+@cli.command("run_all_tests")
+def run_all_tests() -> None:
+    examples = Path(__file__).parent.parent / "examples"
+    for hdl_path in examples.glob("*.hdl"):
+        print(f"Running tests on '{hdl_path.stem}'")
+        test_chip(hdl_path, hdl_path.with_suffix(".tst"))
+        print("-" * 20)
+
+
+@cli.command("run_test", no_args_is_help=True)
+def run_test(hdl_path: Path, tst_path: Path) -> None:
+    print(f"Running tests on '{hdl_path.stem}'")
+    test_chip(hdl_path, tst_path)
+    print("-" * 20)

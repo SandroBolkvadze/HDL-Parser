@@ -11,20 +11,15 @@ class Testcase:
     expected: dict[str, int]
 
 
-@dataclass
 class TestParser:
-    tests: str
-
-    def parse(self) -> list[Testcase]:
+    def parse(self, tests: str) -> list[Testcase]:
         ins_pins: list[str] = []
         outs_pins: list[str] = []
         testcases: list[Testcase] = []
 
-        tests = [
-            line.strip() for line in self.tests.splitlines() if len(line.strip()) > 0
-        ]
+        tests_list = [line.strip() for line in tests.splitlines() if len(line.strip()) > 0]
 
-        for i, line in enumerate(tests):
+        for i, line in enumerate(tests_list):
             inputs, outputs = line.split(";")
             ins_str = [elem.strip() for elem in inputs.split(",")]
             outs_str = [elem.strip() for elem in outputs.split(",")]
@@ -37,8 +32,8 @@ class TestParser:
             outs_int = [int(elem) for elem in outs_str]
             testcases.append(
                 Testcase(
-                    dict(zip(ins_pins, ins_int)),
-                    dict(zip(outs_pins, outs_int)),
+                    dict(zip(ins_pins, ins_int, strict=True)),
+                    dict(zip(outs_pins, outs_int, strict=True)),
                 )
             )
 

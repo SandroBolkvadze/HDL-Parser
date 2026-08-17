@@ -1,19 +1,21 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Protocol, Optional
+from typing import Protocol
 
 from core.chips.atomic_chip import ATOMIC_CHIPS
 from core.chips.chip import Chip
 from core.chips.circuit_chip import CircuitChip
 from core.engine.parser import ChipParser
 
+
 class Loader(Protocol):
-    def search_for(self, file: str) -> Optional[Path]:
+    def search_for(self, file: str) -> Path | None:
         pass
 
     def load(self, file: str) -> str:
         pass
+
 
 class ChipBuilder:
     loader: Loader
@@ -45,5 +47,3 @@ class ChipBuilder:
             chip_description.chip_parts,
             chips,
         )
-
-

@@ -7,6 +7,7 @@ from core.chips.chip import Chip
 from core.chips.chip_part import ChipPart
 from core.general.graph import topo_sort
 
+
 @dataclass
 class CircuitChip:
     chip_name: str
@@ -81,4 +82,3 @@ def build_graph_for(
                 graph[i].append(j)
 
     return graph
-

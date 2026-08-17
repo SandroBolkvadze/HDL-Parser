@@ -20,5 +20,3 @@ def topo_sort(nodes: list[int], graph: dict[int, list[int]]) -> list[int]:
                 q.append(v)
 
     return topo_sorted
-
-
