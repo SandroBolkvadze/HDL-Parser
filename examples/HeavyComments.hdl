@@ -1,0 +1,18 @@
+/**
+ * Regression test: comments in every position a comment can legally
+ * appear -- before the declaration, inside the interface, inside a
+ * PARTS connection list, and trailing a line.
+ */
+CHIP HeavyComments { // chip declaration
+    IN a, b; // two inputs
+    /* single output */
+    OUT out;
+
+    PARTS:
+    And( // start of connection list
+        a=a, /* first pin */
+        b=b,
+        out=w1 // last pin
+    );
+    Not(in=w1, out=out); /* invert it */
+}
