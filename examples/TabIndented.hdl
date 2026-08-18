@@ -1,8 +1,0 @@
-CHIP TabIndented {
-	IN a, b;
-	OUT out;
-
-	PARTS:
-	And(a=a, b=b, out=w1);
-	Or(a=w1, b=b, out=out);
-}
