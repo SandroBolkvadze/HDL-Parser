@@ -15,7 +15,10 @@ def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
     passed = 0
     for i, testcase in enumerate(testcases):
         outputs = chip.forward(testcase.inputs)
-        if outputs == testcase.expected:
+        if all(
+            outputs[output_pin] == expected
+            for output_pin, expected in testcase.expected.items()
+        ):
             passed += 1
             print(f"Testcase {i} passed")
         else:
