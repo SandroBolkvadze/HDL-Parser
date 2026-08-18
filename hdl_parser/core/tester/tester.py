@@ -20,7 +20,6 @@ class TestResult:
 
 
 def run_testcases(chip: Chip, testcases: list[Testcase]) -> list[TestResult]:
-    passed = 0
     results: list[TestResult] = []
     for i, testcase in enumerate(testcases):
         outputs = chip.forward(testcase.inputs)
@@ -28,7 +27,6 @@ def run_testcases(chip: Chip, testcases: list[Testcase]) -> list[TestResult]:
             outputs[output_pin] == expected
             for output_pin, expected in testcase.expected.items()
         ):
-            passed += 1
             results.append(TestResult(i, True, testcase.expected, outputs))
         else:
             results.append(TestResult(i, False, testcase.expected, outputs))
