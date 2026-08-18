@@ -2,8 +2,8 @@ from pathlib import Path
 
 from typer import Typer
 
-from hdl_parser.core.engine.builder import ChipBuilder
-from hdl_parser.core.engine.parser import DefaultChipParser
+from hdl_parser.core.engine.chip_builder import ChipBuilder
+from hdl_parser.core.engine.chip_parser import DefaultChipParser
 from hdl_parser.infra.loader import DefaultLoader
 from hdl_parser.runner.tester import run_testcases, parse_tst
 
