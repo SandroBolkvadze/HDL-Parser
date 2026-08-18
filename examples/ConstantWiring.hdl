@@ -1,0 +1,12 @@
+// Exercises literal true/false pins on the wire side of a connection --
+// the case that previously raised KeyError before the constant-pin fix.
+// Covers Or-with-true, And-with-false, and And-with-true in one chip.
+CHIP ConstantWiring {
+    IN a;
+    OUT alwaysOn, alwaysOff, passThrough;
+
+    PARTS:
+    Or(a=a, b=true, out=alwaysOn);
+    And(a=a, b=false, out=alwaysOff);
+    And(a=a, b=true, out=passThrough);
+}

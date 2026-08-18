@@ -1,0 +1,12 @@
+// Chains two instances of the SAME composite sub-chip (Xor) in series,
+// where the second instance consumes the first instance's output --
+// a stricter ordering test than Xor.hdl's internal diamond, since it
+// forces correct sequencing across composite (not just built-in) parts.
+CHIP Parity3 {
+    IN a, b, c;
+    OUT out;
+
+    PARTS:
+    Xor(a=a, b=b, out=w1);
+    Xor(a=w1, b=c, out=out);
+}

@@ -1,0 +1,16 @@
+// Built-ins only, but with heavy fan-out AND fan-in: each input feeds
+// two And gates, and both Or gates feed a third. Also reuses And three
+// times and Or twice in one PARTS list, with distinct wiring each time
+// -- checks that the builder's per-type dedupe never lets instances
+// bleed into each other.
+CHIP Majority3 {
+    IN a, b, c;
+    OUT out;
+
+    PARTS:
+    And(a=a, b=b, out=ab);
+    And(a=b, b=c, out=bc);
+    And(a=a, b=c, out=ac);
+    Or(a=ab, b=bc, out=w1);
+    Or(a=w1, b=ac, out=out);
+}
