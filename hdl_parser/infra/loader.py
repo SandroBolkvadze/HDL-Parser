@@ -1,12 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Optional
 
 
 @dataclass
 class DefaultLoader:
     parent: Path
 
-    def search_for(self, file: str) -> Path | None:
+    def search_for(self, file: str) -> Optional[Path]:
         filepath = self.parent / file
         return filepath if filepath.is_file() else None
 

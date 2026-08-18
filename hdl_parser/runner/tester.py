@@ -27,12 +27,12 @@ def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
     print(f"Testcases passed {passed} / {len(testcases)}")
 
 
-def parse_tst(tests: str) -> list[Testcase]:
+def parse_tst(tst: str) -> list[Testcase]:
     ins_pins: list[str] = []
     outs_pins: list[str] = []
     testcases: list[Testcase] = []
 
-    tests_list = [line.strip() for line in tests.splitlines() if len(line.strip()) > 0]
+    tests_list = [line.strip() for line in tst.splitlines() if len(line.strip()) > 0]
 
     for i, line in enumerate(tests_list):
         inputs, outputs = line.split(";")
