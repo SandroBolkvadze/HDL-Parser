@@ -11,8 +11,17 @@ class Testcase:
     expected: dict[str, int]
 
 
-def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
+@dataclass
+class TestResult:
+    index: int
+    passed: bool
+    expected: dict[str, int]
+    actual: dict[str, int]
+
+
+def run_testcases(chip: Chip, testcases: list[Testcase]) -> list[TestResult]:
     passed = 0
+    results: list[TestResult] = []
     for i, testcase in enumerate(testcases):
         outputs = chip.forward(testcase.inputs)
         if all(
@@ -20,11 +29,11 @@ def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
             for output_pin, expected in testcase.expected.items()
         ):
             passed += 1
-            print(f"Testcase {i} passed")
+            results.append(TestResult(i, True, testcase.expected, outputs))
         else:
-            print(f"Testcase {i} failed; expected {testcase.expected}; got {outputs}")
+            results.append(TestResult(i, False, testcase.expected, outputs))
 
-    print(f"Testcases passed {passed} / {len(testcases)}")
+    return results
 
 
 def parse_tst(tst: str) -> list[Testcase]:
