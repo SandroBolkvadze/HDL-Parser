@@ -10,6 +10,7 @@ class Testcase:
     inputs: dict[str, int]
     expected: dict[str, int]
 
+
 def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
     passed = 0
     for i, testcase in enumerate(testcases):
@@ -21,6 +22,7 @@ def run_testcases(chip: Chip, testcases: list[Testcase]) -> None:
             print(f"Testcase {i} failed; expected {testcase.expected}; got {outputs}")
 
     print(f"Testcases passed {passed} / {len(testcases)}")
+
 
 def parse_tst(tests: str) -> list[Testcase]:
     ins_pins: list[str] = []
@@ -48,5 +50,3 @@ def parse_tst(tests: str) -> list[Testcase]:
         )
 
     return testcases
-
-

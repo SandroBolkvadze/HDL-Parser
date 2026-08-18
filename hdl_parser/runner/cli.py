@@ -5,13 +5,14 @@ from typer import Typer
 from hdl_parser.core.engine.chip_builder import ChipBuilder
 from hdl_parser.core.engine.chip_parser import DefaultChipParser
 from hdl_parser.infra.loader import DefaultLoader
-from hdl_parser.runner.tester import run_testcases, parse_tst
+from hdl_parser.runner.tester import parse_tst, run_testcases
 
 cli = Typer(
     name="HDL Parser",
     no_args_is_help=True,
     add_completion=False,
 )
+
 
 def test_chip(hdl_path: Path, tst_path: Path) -> None:
     chip = ChipBuilder(DefaultLoader(hdl_path.parent), DefaultChipParser()).build(
