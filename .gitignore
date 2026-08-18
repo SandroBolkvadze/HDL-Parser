@@ -217,4 +217,8 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 
+# .idea
 .idea
+
+# poetry.lock
+poetry.lock
