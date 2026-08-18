@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from core.chips.chip import Chip
+from hdl_parser.core.chips.chip import Chip
 
 
 @dataclass

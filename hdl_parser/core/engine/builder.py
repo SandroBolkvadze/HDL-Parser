@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Protocol
 
-from core.chips.atomic_chip import ATOMIC_CHIPS
-from core.chips.chip import Chip
-from core.chips.circuit_chip import CircuitChip
-from core.engine.parser import ChipParser
+from hdl_parser.core.chips.atomic_chip import ATOMIC_CHIPS
+from hdl_parser.core.chips.chip import Chip
+from hdl_parser.core.chips.circuit_chip import CircuitChip
+from hdl_parser.core.engine.parser import ChipParser
 
 
 class Loader(Protocol):

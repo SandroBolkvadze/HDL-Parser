@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from core.chips.chip_description import ChipDescription
-from core.chips.chip_part import ChipPart, Connection
+from hdl_parser.core.chips.chip_description import ChipDescription
+from hdl_parser.core.chips.chip_part import ChipPart, Connection
 
 
 class ChipParser(Protocol):

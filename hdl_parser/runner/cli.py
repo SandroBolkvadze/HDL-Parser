@@ -2,17 +2,16 @@ from pathlib import Path
 
 from typer import Typer
 
-from core.engine.builder import ChipBuilder
-from core.engine.parser import DefaultChipParser
-from infra.loader import DefaultLoader
-from runner.tester import run_testcases, parse_tst
+from hdl_parser.core.engine.builder import ChipBuilder
+from hdl_parser.core.engine.parser import DefaultChipParser
+from hdl_parser.infra.loader import DefaultLoader
+from hdl_parser.runner.tester import run_testcases, parse_tst
 
 cli = Typer(
     name="HDL Parser",
     no_args_is_help=True,
     add_completion=False,
 )
-
 
 def test_chip(hdl_path: Path, tst_path: Path) -> None:
     chip = ChipBuilder(DefaultLoader(hdl_path.parent), DefaultChipParser()).build(
@@ -24,7 +23,7 @@ def test_chip(hdl_path: Path, tst_path: Path) -> None:
 
 @cli.command("run_all_tests")
 def run_all_tests() -> None:
-    examples = Path(__file__).parent.parent / "examples"
+    examples = Path(__file__).parent.parent.parent / "examples"
     for hdl_path in examples.glob("*.hdl"):
         print(f"- Running tests on '{hdl_path.stem}'")
         test_chip(hdl_path, hdl_path.with_suffix(".tst"))

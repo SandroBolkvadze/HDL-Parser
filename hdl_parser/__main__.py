@@ -1,4 +1,4 @@
-from runner.cli import cli
+from hdl_parser.runner.cli import cli
 
 if __name__ == "__main__":
     cli()

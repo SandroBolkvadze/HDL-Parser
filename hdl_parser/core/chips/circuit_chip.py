@@ -3,9 +3,9 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 
-from core.chips.chip import Chip
-from core.chips.chip_part import ChipPart
-from core.general.graph import topo_sort
+from hdl_parser.core.chips.chip import Chip
+from hdl_parser.core.chips.chip_part import ChipPart
+from hdl_parser.core.general.graph import topo_sort
 
 
 @dataclass

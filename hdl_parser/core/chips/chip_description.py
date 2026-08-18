@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from core.chips.chip_part import ChipPart
+from hdl_parser.core.chips.chip_part import ChipPart
 
 
 @dataclass
