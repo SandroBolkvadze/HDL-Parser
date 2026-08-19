@@ -11,7 +11,7 @@ class DefaultLoader:
         return filepath if filepath.is_file() else None
 
     def load(self, file: str) -> str:
-        filepath = self.parent / file
-        if not filepath.is_file():
+        filepath = self.path_for(file)
+        if filepath is None:
             raise Exception(f"File '{file}' not found")
         return filepath.read_text(encoding="utf-8")
