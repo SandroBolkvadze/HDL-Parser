@@ -75,6 +75,8 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
 
 ## Examples HDL and test files
 
+Testing framework is contained in `tester.py`.
+
 Example chips live under `examples/`, ranging from a single level of composition to several levels of recursion and reused sub-chips.
 
 A pair of `.hdl` and `.tst` files under `examples/`:
