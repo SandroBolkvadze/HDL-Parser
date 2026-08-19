@@ -6,7 +6,7 @@ from pathlib import Path
 class DefaultLoader:
     parent: Path
 
-    def search_for(self, file: str) -> Path | None:
+    def path_for(self, file: str) -> Path | None:
         filepath = self.parent / file
         return filepath if filepath.is_file() else None
 

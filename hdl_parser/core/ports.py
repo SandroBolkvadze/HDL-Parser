@@ -3,7 +3,7 @@ from typing import Protocol
 
 
 class Loader(Protocol):
-    def search_for(self, file: str) -> Path | None:
+    def path_for(self, file: str) -> Path | None:
         pass
 
     def load(self, file: str) -> str:

@@ -18,7 +18,7 @@ class ChipBuilder:
 
     def build(self, chip_name: str) -> Chip:
         chip_file = f"{chip_name}.hdl"
-        if self.loader.search_for(chip_file) is None:
+        if self.loader.path_for(chip_file) is None:
             return ATOMIC_CHIPS[chip_name]
 
         hdl = self.loader.load(chip_file)
