@@ -1,20 +1,10 @@
 from __future__ import annotations
 
-from pathlib import Path
-from typing import Protocol
-
 from hdl_parser.core.chips.atomic_chip import ATOMIC_CHIPS
 from hdl_parser.core.chips.chip import Chip
 from hdl_parser.core.chips.circuit_chip import CircuitChip
 from hdl_parser.core.engine.chip_parser import ChipParser
-
-
-class Loader(Protocol):
-    def search_for(self, file: str) -> Path | None:
-        pass
-
-    def load(self, file: str) -> str:
-        pass
+from hdl_parser.core.ports import Loader
 
 
 class ChipBuilder:
