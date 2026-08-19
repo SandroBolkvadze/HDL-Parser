@@ -43,7 +43,7 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
  
  Sub-chips of circuit (non-atomic) chip are *topologically* sorted (`graph.py`) before passing *inputs* through.
 
-```
+```tree
 .
 ├── examples/
 ├── hdl_parser/
