@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from typer import Typer
+from typer import Exit, Typer
 
 from hdl_parser.core.engine.chip_builder import ChipBuilder
 from hdl_parser.core.engine.chip_parser import DefaultChipParser
@@ -14,7 +14,7 @@ cli = Typer(
 )
 
 
-def run(hdl_path: Path, tst_path: Path) -> None:
+def run(hdl_path: Path, tst_path: Path) -> bool:
     chip_parser = DefaultChipParser()
     chip_builder = ChipBuilder(DefaultLoader(hdl_path.parent), chip_parser)
 
@@ -38,17 +38,27 @@ def run(hdl_path: Path, tst_path: Path) -> None:
 
     print(f"Testcases passed {passed} / {(passed + failed)}")
 
+    return failed == 0
+
 
 @cli.command("run-all")
 def run_all_tests(directory: Path) -> None:
+    test_failed = False
     for hdl_path in directory.glob("*.hdl"):
         print(f"- Running tests on '{hdl_path.stem}'")
-        run(hdl_path, hdl_path.with_suffix(".tst"))
+        if not run(hdl_path, hdl_path.with_suffix(".tst")):
+            test_failed = True
         print()
+
+    if test_failed:
+        raise Exit(code=1)
 
 
 @cli.command("run", no_args_is_help=True)
 def run_test(hdl_path: Path, tst_path: Path) -> None:
     print(f"- Running tests on '{hdl_path.stem}'")
-    run(hdl_path, tst_path)
+    test_failed = run(hdl_path, tst_path)
     print()
+
+    if test_failed:
+        raise Exit(code=1)
