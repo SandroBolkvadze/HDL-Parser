@@ -43,22 +43,22 @@ def run(hdl_path: Path, tst_path: Path) -> bool:
 
 @cli.command("run-all")
 def run_all_tests(directory: Path) -> None:
-    test_failed = False
+    any_failed = False
     for hdl_path in directory.glob("*.hdl"):
         print(f"- Running tests on '{hdl_path.stem}'")
         if not run(hdl_path, hdl_path.with_suffix(".tst")):
-            test_failed = True
+            any_failed = True
         print()
 
-    if test_failed:
+    if any_failed:
         raise Exit(code=1)
 
 
 @cli.command("run", no_args_is_help=True)
 def run_test(hdl_path: Path, tst_path: Path) -> None:
     print(f"- Running tests on '{hdl_path.stem}'")
-    test_failed = run(hdl_path, tst_path)
+    all_passed = run(hdl_path, tst_path)
     print()
 
-    if test_failed:
+    if not all_passed:
         raise Exit(code=1)
