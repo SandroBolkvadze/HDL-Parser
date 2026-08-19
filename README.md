@@ -30,7 +30,7 @@ python3 -m hdl_parser run-all <path-to-directory>
 
 The project is split into two parts: 
 
-- **Parsing and Building** (`engine` directory): `ChipParser` parses `.hdl` file into `ChipDescription`. `ChipBuilder` utilizes `ChipParser` and `Loader` (for file reading) to build recursive representation of chip given its name.  
+- **Parsing and Building** (`engine` directory): `ChipParser` parses `.hdl` file into `ChipDescription` (`chip_description.py`). `ChipBuilder` utilizes `ChipParser` and `Loader` (for file reading) to build recursive representation of chip given its name.  
 
 
 - **Chip simulation** (`chips` directory): Every chip - Atomic and Circuit - conforms to same Chip Protocol (`chip.py`) which defines following methods:
