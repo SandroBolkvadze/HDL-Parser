@@ -5,11 +5,11 @@
 
 ---
 
-## Usage
+## How to run project
 
 ### Test a single chip
 
-To test single chip, run following command from project **root** directory:
+To test single chip, run following command from project **root** directory
 
 ```bash
 python3 -m hdl_parser run <path-to-chip>.hdl <path-to-tests>.tst
@@ -17,10 +17,16 @@ python3 -m hdl_parser run <path-to-chip>.hdl <path-to-tests>.tst
 
 ### Test multiple chips
 
-To test multiple chips placed inside common directory, run following command from project **root** directory:
+To test multiple chips under common directory, run following command from project **root** directory
 
 ```bash
 python3 -m hdl_parser run-all <path-to-directory>
 ```
 
 ---
+
+## Description of approach
+
+
+## Examples HDL and test files
+
