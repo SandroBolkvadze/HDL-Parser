@@ -1,5 +1,5 @@
 [project]
-name = "hdl_parser"
+name = "HDL-Parser"
 version = "0.1.0"
 readme = "README.md"
 authors = []
