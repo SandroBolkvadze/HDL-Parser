@@ -37,16 +37,15 @@ def run(hdl_path: Path, tst_path: Path) -> None:
     print(f"Testcases passed {passed} / {(passed + failed)}")
 
 
-@cli.command("run_all_tests")
-def run_all_tests() -> None:
-    examples = Path(__file__).parent.parent.parent / "examples"
-    for hdl_path in examples.glob("*.hdl"):
+@cli.command("run-all")
+def run_all_tests(directory: Path) -> None:
+    for hdl_path in directory.glob("*.hdl"):
         print(f"- Running tests on '{hdl_path.stem}'")
         run(hdl_path, hdl_path.with_suffix(".tst"))
         print()
 
 
-@cli.command("run_test", no_args_is_help=True)
+@cli.command("run", no_args_is_help=True)
 def run_test(hdl_path: Path, tst_path: Path) -> None:
     print(f"- Running tests on '{hdl_path.stem}'")
     run(hdl_path, tst_path)

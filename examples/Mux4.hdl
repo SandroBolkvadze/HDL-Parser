@@ -1,0 +1,18 @@
+// 4-to-1 multiplexer over single-bit inputs a, b, c, d, selected by the
+// 2-bit index (s1 s0): 00 -> a, 01 -> b, 10 -> c, 11 -> d.
+//
+// This is the hardest structural test in this set: it instantiates Mux
+// THREE times in a genuine two-layer dependency graph (the third Mux
+// depends on the outputs of the first two, which run in parallel), rather
+// than a flat chain of single-dependency parts. This exercises both the
+// builder's chip-type caching (Mux is resolved/parsed once, reused three
+// times) and the simulator's topological sort on a non-trivial graph.
+CHIP Mux4 {
+    IN a, b, c, d, s0, s1;
+    OUT out;
+
+    PARTS:
+    Mux(a=a, b=b, sel=s0, out=low);
+    Mux(a=c, b=d, sel=s0, out=high);
+    Mux(a=low, b=high, sel=s1, out=out);
+}
