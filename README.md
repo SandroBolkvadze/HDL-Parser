@@ -8,12 +8,25 @@
 
 ## How to run project
 
+### Requirements
+
+- Install poetry:
+```shell
+python -m pip install --upgrade pip
+python -m pip install --upgrade poetry
+```
+
+- Run inside project:
+```shell
+poetry install --no-root
+```
+
 ### Test a single chip
 
 To test single chip, run following command from project **root** directory:
 
 ```bash
-python3 -m hdl_parser run <path-to-chip>.hdl <path-to-tests>.tst
+poetry run python -m hdl_parser run <path-to-chip>.hdl <path-to-tests>.tst
 ```
 
 ### Test multiple chips
@@ -21,7 +34,7 @@ python3 -m hdl_parser run <path-to-chip>.hdl <path-to-tests>.tst
 To test multiple chips living under some directory, run following command from project **root** directory:
 
 ```bash
-python3 -m hdl_parser run-all <path-to-directory>
+poetry run python -m hdl_parser run-all <path-to-directory>
 ```
 
 ---
@@ -118,4 +131,4 @@ a,b; out
 ```
 
 The rest of examples covers deeper recursions, constant (`true`/`false`) pin wiring, etc.
-Run `python3 -m hdl_parser run-all examples` to test all of them at once.
+Run `poetry run python -m hdl_parser run-all examples` to test all of them at once.
