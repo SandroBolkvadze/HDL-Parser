@@ -156,7 +156,7 @@ class DefaultChipParser:
         # consume chip name
         chip_name = self.consume_token()
 
-        # consume '(' sumbol
+        # consume '(' symbol
         self.consume_symbol()
 
         connections: list[Connection] = []
