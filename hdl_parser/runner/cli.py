@@ -4,8 +4,8 @@ from typer import Typer
 
 from hdl_parser.core.engine.chip_builder import ChipBuilder
 from hdl_parser.core.engine.chip_parser import DefaultChipParser
-from hdl_parser.infra.loader import DefaultLoader
 from hdl_parser.core.tester.tester import parse_tst, run_testcases
+from hdl_parser.infra.loader import DefaultLoader
 
 cli = Typer(
     name="HDL Parser",
@@ -31,7 +31,9 @@ def run(hdl_path: Path, tst_path: Path) -> None:
         else:
             failed += 1
             print(
-                f"Testcase {result.index} failed; expected {result.expected}; got {result.actual}"
+                f"Testcase {result.index} failed; "
+                f"expected {result.expected}; "
+                f"got {result.actual}"
             )
 
     print(f"Testcases passed {passed} / {(passed + failed)}")
