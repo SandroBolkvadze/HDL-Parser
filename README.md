@@ -47,7 +47,9 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
 
 ```tree
 .
-├── examples/
+├── examples
+│   ├── *.hdl
+│   └── *.tst
 ├── hdl_parser/
 │   ├── core/
 │   │   ├── chips/
