@@ -43,7 +43,7 @@ poetry run python -m hdl_parser run-all <path-to-directory>
 
 The project is split into two parts: 
 
-- **Parsing and Building** (`engine` directory): `ChipParser` parses `.hdl` file into `ChipDescription` (`chip_description.py`). `ChipBuilder` utilizes `ChipParser` and `Loader` (for file reading) to build recursive representation of chip given its name.  
+- **Parsing and Building** (`engine` directory): `ChipParser` parses `.hdl` file and constructs `ChipDescription` (`chip_description.py`). `ChipBuilder` utilizes `ChipParser` and `Loader` (for file reading) to build recursive representation of chip given its name.  
 
 
 - **Chip simulation** (`chips` directory): Every chip - Atomic and Circuit - conforms to same Chip Protocol (`chip.py`) which defines following methods:
@@ -56,7 +56,9 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
 
  Each chip's `forward` takes in *pin:value* mapping as input and outputs *pin:value* mapping.
  
- Sub-chips of circuit (non-atomic) chip are *topologically* sorted (`graph.py`) before passing *inputs* through.
+ Sub-chips of circuit (non-atomic) chip are *topologically* sorted (`graph.py`) before passing *inputs* through. 
+
+ At each stage (while iterating through *topologically* sorted sub-chips) currently resolved output pin values is maintained in `resolved: dict[str, int]`.
 
 ```tree
 .
