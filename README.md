@@ -10,7 +10,7 @@
 
 ### Requirements
 
-- Install poetry:
+- Install *poetry*:
 ```shell
 python -m pip install --upgrade pip
 python -m pip install --upgrade poetry
@@ -20,6 +20,8 @@ python -m pip install --upgrade poetry
 ```shell
 poetry install --no-root
 ```
+
+After setting up *poetry* you can use `poetry run` prefix for further commands (including linting & formatting checks). 
 
 ### Test a single chip
 
