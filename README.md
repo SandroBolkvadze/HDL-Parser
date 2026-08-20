@@ -58,7 +58,7 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
  
  Sub-chips of circuit (non-atomic) chip are *topologically* sorted (`graph.py`) before passing *inputs* through. 
 
- At each stage (while iterating through *topologically* sorted sub-chips) currently resolved output pin values is maintained in `resolved: dict[str, int]`.
+ At each stage (while iterating through *topologically* sorted sub-chips) currently resolved output pin values are maintained in `resolved: dict[str, int]`.
 
 ```tree
 .
