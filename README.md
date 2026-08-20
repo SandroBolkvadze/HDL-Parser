@@ -134,4 +134,5 @@ a,b; out
 ```
 
 The rest of examples covers deeper recursions, constant (`true`/`false`) pin wiring, etc.
+
 Run `poetry run python -m hdl_parser run-all examples` to test all of them at once.
