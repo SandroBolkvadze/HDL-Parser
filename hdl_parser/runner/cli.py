@@ -13,7 +13,6 @@ cli = Typer(
     add_completion=False,
 )
 
-
 def run(hdl_path: Path, tst_path: Path) -> bool:
     chip_parser = DefaultChipParser()
     chip_builder = ChipBuilder(DefaultLoader(hdl_path.parent), chip_parser)
