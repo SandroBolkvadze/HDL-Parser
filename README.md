@@ -91,7 +91,7 @@ def forward(self, inputs: dict[str, int]) -> dict[str, int]: ...
 └── pyproject.toml
 ```
 
-## Examples HDL and test files
+## Example HDL and test files
 
 Testing framework is contained in `tester.py`.
 
