@@ -35,7 +35,7 @@ def run(hdl_path: Path, tst_path: Path) -> bool:
                 f"got {result.actual}"
             )
 
-    print(f"Testcases passed {passed} / {(passed + failed)}")
+    print(f"Total passed: {passed} / {(passed + failed)}")
 
     return failed == 0
 
