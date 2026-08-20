@@ -99,7 +99,7 @@ Example chips live under `examples/`, ranging from a single level of composition
 
 A pair of `.hdl` and `.tst` files under `examples/`:
 
-`examples/Xor.hdl` - a single-level composite chip built entirely from atomic primitives:
+`examples/Xor.hdl` - a single-level composite chip built entirely from builtin primitives:
 ```hdl
 // This file is part of www.nand2tetris.org
 // and the book "The Elements of Computing Systems"
